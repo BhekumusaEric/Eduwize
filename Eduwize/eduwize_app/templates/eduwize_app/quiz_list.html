@@ -1,0 +1,10 @@
+{% extends 'eduwize_app/base_generic.html' %}
+
+{% block content %}
+  <h2>Quiz List</h2>
+  <ul>
+    {% for quiz in quizzes %}
+      <li>{{ quiz.title }} - {{ quiz.course.name }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

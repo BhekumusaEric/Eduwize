@@ -1,0 +1,10 @@
+{% extends 'eduwize_app/base_generic.html' %}
+
+{% block content %}
+  <h2>AI Chatbot Q&A</h2>
+  <ul>
+    {% for chatbot in chatbots %}
+      <li>{{ chatbot.question }} - {{ chatbot.answer }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

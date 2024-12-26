@@ -1,0 +1,48 @@
+{% extends 'eduwize_app/base.html' %}
+{% load static %}
+{% block content %}
+<form action="{% url 'users:logout' %}" method="POST">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+</form>
+<a href="{% url 'eduwize_app:profile' %}"> Profile</a>
+<a href="{% url 'users:signup' %}"> Signup </a>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Dashboard</h1>
+            <p>Here you can see all the courses you have created.</p>
+            <div class="row">
+                <div class="col-md-12">
+                    <a href="{% url 'eduwize_app:enrollment-add' %}" class="btn btn-primary">Create Course</a>
+                </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Level</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in courses %}
+                                <tr>
+                                    <td>{{ course.name }}</td>
+                                    <td>{{ course.level }}</td>
+                                    <td>
+                                        <a href="{% url 'eduwize_app:course-edit' course.id %}" class="btn btn-primary">Edit</a>
+                                        <a href="{% url 'eduwize_app:course-delete' course.id %}" class="btn btn-danger">Delete</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>  
+        </div>
+    </div>
+</div>
+{% endblock %}

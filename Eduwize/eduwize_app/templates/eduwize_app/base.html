@@ -1,0 +1,63 @@
+{% extends 'eduwize_app/base_generic.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+   
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}My Educational Website{% endblock %}</title>
+        
+        <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+        <!-- Include additional CSS or JS files here -->
+    </head>
+    <body>
+        <header>
+            <nav>
+                <ul>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'users:logout' %}">Logout</a></li>
+                        <li><a href="{% url 'eduwize_app:profile' %}">Profile</a></li>
+                        <li><a href="{% url 'eduwize_app:home' %}">Dashboard</a></li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}">Login</a></li>
+                        <li><a href="{% url 'register' %}">Register</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            <nav>
+                <ul>
+                    <li><a href="{% url 'eduwize_app:home' %}">Home</a></li>
+                    <li><a href="{% url 'eduwize_app:student-list' %}">Students</a></li>
+                    <li><a href="{% url 'eduwize_app:course-list' %}">Courses</a></li>
+                    <li><a href="{% url 'eduwize_app:notifications-list' %}">Notifications</a></li>
+                    <!-- Add more navigation links as needed -->
+                </ul>
+            </nav>
+        </header>
+
+        <div class="sidebar">
+            <h2>Quick Links</h2>
+            <ul>
+                <li><a href="{% url 'eduwize_app:quiz-list' %}">Quizzes</a></li>
+                <li><a href="{% url 'eduwize_app:performance-list' %}">Performance</a></li>
+                <li><a href="{% url 'eduwize_app:feedback' %}">Feedback</a></li>
+                <li><a href="{% url 'eduwize_app:profile' %}"></a></li>
+                <!-- Add more quick links as needed -->
+            </ul>
+        </div>
+
+        <main>
+            <div class="content">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 My Educational Website. All rights reserved.</p>
+        </footer>
+    </body>
+</html>

@@ -1,0 +1,10 @@
+{% extends 'eduwize_app/base_generic.html' %}
+
+{% block content %}
+  <h2>Activity Log</h2>
+  <ul>
+    {% for log in activity_logs %}
+      <li>{{ log.student.name.username }} - {{ log.activity }} - {{ log.timestamp }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

@@ -1,0 +1,8 @@
+<form action="{% url 'users:login' %}" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">Login</button>
+    <input type="hidden" value="{% url 'eduwize_app:index' %}" name="next" >
+    <a href="{% url 'users:register' %}">Register</a>
+</form>

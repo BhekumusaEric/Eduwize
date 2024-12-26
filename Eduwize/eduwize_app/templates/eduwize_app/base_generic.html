@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Learning Platform{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>AI-Powered Learning Platform</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'eduwize_app:home' %}">Home</a></li>
+                <li><a href="{% url 'eduwize_app:student-list' %}">Students</a></li>
+                <li><a href="{% url 'eduwize_app:course-list' %}">Courses</a></li>
+                <li><a href="{% url 'eduwize_app:quiz-list' %}">Quizzes</a></li>
+                <li><a href="{% url 'eduwize_app:performance-list' %}">Performance</a></li>
+                <li><a href="{% url 'eduwize_app:feedback' %}">Feedback</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>

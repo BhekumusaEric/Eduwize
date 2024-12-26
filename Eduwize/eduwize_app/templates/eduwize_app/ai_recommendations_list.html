@@ -1,0 +1,10 @@
+{% extends 'eduwize_app/base_generic.html' %}
+
+{% block content %}
+  <h2>AI Recommendations</h2>
+  <ul>
+    {% for recommendation in recommendations %}
+      <li>{{ recommendation.user.username }} - {{ recommendation.recommendation }} - {{ recommendation.reason }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

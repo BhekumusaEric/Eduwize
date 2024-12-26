@@ -1,0 +1,23 @@
+{% extends 'eduwize_app/base_generic.html' %}
+
+{% block content %}
+    <h2>Course Details</h2>
+    <p>Name: {{ course.name }}</p>
+    <p>Description: {{ course.description }}</p>
+    <p>Level: {{ course.level }}</p>
+    <p>Start Date: {{ course.start_date }}</p>
+    <p>End Date: {{ course.end_date }}</p>
+    <p>Price: {{ course.price }}</p>
+    <p>Duration: {{ course.duration }}</p>
+    <p>Thumbnail: {{ course.thumbnail }}</p>    
+    <p>Video: {{ course.video }}</p>
+    <p>Category: {{ course.category }}</p>
+    <p>Tags: {{ course.tags }}</p>
+    <p>Created At: {{ course.created_at }}</p>
+    <p>Updated At: {{ course.updated_at }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Yes, delete</button>
+        <a href="{% url 'eduwize_app:enrollment-list' %}">Cancel</a>
+    </form>
+{% endblock %}

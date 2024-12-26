@@ -1,0 +1,46 @@
+{% extends 'eduwize_app/base_generic.html' %}
+
+{% block content %}
+    <h2>Course Details</h2>
+    <p>Name: {{ course.name }}</p>
+    <p>Description: {{ course.description }}</p>
+    <p>Level: {{ course.level }}</p>
+    <p>Start Date: {{ course.start_date }}</p>
+    <p>End Date: {{ course.end_date }}</p>
+    <p>Price: {{ course.price }}</p>
+    <p>Duration: {{ course.duration }}</p>
+    <p>Thumbnail: {{ course.thumbnail }}</p>
+    <p>Video: {{ course.video }}</p>
+    <p>Course Category: {{ course.course_category }}</p>
+    <p>Course Sub Category: {{ course.course_sub_category }}</p>
+    <p>Course Status: {{ course.course_status }}</p>
+    <p>Course Type: {{ course.course_type }}</p>
+    <p>Course Language: {{ course.course_language }}</p>
+    <p>Course Level: {{ course.course_level }}</p>
+    <p>Course Level: {{ course.course_level }}</p>
+    <p>Created At: {{ course.created_at }}</p>
+    <p>Updated At: {{ course.updated_at }}</p>
+    {% endblock %}
+    {% block sidebar %}
+    <div class="sidebar">
+        <h2>Course Details</h2>
+        <p>Course Name: {{ course.name }}</p>
+        <p>Course Description: {{ course.description }}</p>
+        <p>Course Level: {{ course.level }}</p>
+        <p>Course Start Date: {{ course.start_date }}</p>
+        <p>Course End Date: {{ course.end_date }}</p>
+        <p>Course Price: {{ course.price }}</p>
+        <p>Course Duration: {{ course.duration }}</p>
+        <p>Course Thumbnail: {{ course.thumbnail }}</p>
+        <p>Course Video: {{ course.video }}</p>
+        <p>Course Category: {{ course.course_category }}</p>
+        <p>Course Sub Category: {{ course.course_sub_category }}</p>
+        <p>Course Status: {{ course.course_status }}</p>
+        <p>Course Type: {{ course.course_type }}</p>
+        <p>Course Language: {{ course.course_language }}</p>
+        <p>Course Level: {{ course.course_level }}</p>
+        <p>Created At: {{ course.created_at }}</p>
+        <p>Updated At: {{ course.updated_at }}</p>
+        </div>
+        {% endblock %}
+        

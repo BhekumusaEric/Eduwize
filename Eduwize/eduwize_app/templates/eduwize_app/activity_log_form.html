@@ -1,0 +1,10 @@
+{% extends 'eduwize_app/base_generic.html' %}
+
+{% block content %}
+  <h2>Activity Log</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit</button>
+  </form>
+{% endblock %}

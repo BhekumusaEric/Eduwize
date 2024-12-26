@@ -1,0 +1,28 @@
+
+{% extends 'eduwize_app/base_generic.html' %}
+
+{% block content %}
+  <h2>AI Recommendations</h2>
+  <p>Based on your learning patterns, we recommend the following resources:</p>
+  <ul>
+    {% for recommendation in ai_recommendations %}
+      <li>{{ recommendation.resource.title }} ({{ recommendation.reason }})</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+{% block script %}
+  <script>
+    // Your JavaScript code here
+  </script>
+{% endblock %}
+{% block style %}
+  <style>   
+  /* Your CSS styles here */
+  </style>
+  {% endblock %}
+  {% block body_class %}
+  <body class="ai-recommendations">
+    {% endblock %}
+    {% endblock %}
+
+  </body>

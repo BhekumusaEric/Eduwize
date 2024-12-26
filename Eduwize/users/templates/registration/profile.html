@@ -1,0 +1,8 @@
+<!-- profile.html -->
+{% if student %}
+    <p>Student ID: {{ student.student_id }}</p>
+    <p>Level: {{ student.level }}</p>
+    <p>Bio: {{ student.bio }}</p>
+{% else %}
+    <p>No student profile found. Please complete your registration.</p>
+{% endif %}

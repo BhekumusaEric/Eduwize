@@ -1,0 +1,6 @@
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form}}
+    <button type="submit" class="btn btn-primary">Register</button>
+    <input type="hidden" value="{% url 'eduwize_app:index' %}" name="next" >
+</form>

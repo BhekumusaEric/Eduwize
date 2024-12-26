@@ -1,0 +1,10 @@
+{% extends 'eduwize_app/base_generic.html' %}
+
+{% block content %}
+  <h2>Tags List</h2>
+  <ul>
+    {% for tag in tags %}
+      <li>{{ tag.name }} - {{ tag.slug }}</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
