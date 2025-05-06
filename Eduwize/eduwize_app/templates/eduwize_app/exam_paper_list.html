@@ -1,0 +1,229 @@
+{% extends 'eduwize_app/base_generic.html' %}
+{% load static %}
+
+{% block title %}Eduwize | Past Exam Papers{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Past Exam Papers</h1>
+    {% if is_admin %}
+    <div>
+        <a href="{% url 'eduwize_app:exam-papers-add' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Add New Exam Paper
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Filters -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Filter Exam Papers</h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row">
+            <!-- Course Filter -->
+            <div class="col-md-3 mb-3">
+                <label for="course">Course</label>
+                <select name="course" id="course" class="form-control">
+                    <option value="">All Courses</option>
+                    {% for course in courses %}
+                        <option value="{{ course.id }}" {% if current_filters.course == course.id|stringformat:"i" %}selected{% endif %}>
+                            {{ course.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Year Filter -->
+            <div class="col-md-2 mb-3">
+                <label for="year">Year</label>
+                <select name="year" id="year" class="form-control">
+                    <option value="">All Years</option>
+                    {% for year in years %}
+                        <option value="{{ year }}" {% if current_filters.year == year|stringformat:"i" %}selected{% endif %}>
+                            {{ year }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Exam Type Filter -->
+            <div class="col-md-2 mb-3">
+                <label for="exam_type">Exam Type</label>
+                <select name="exam_type" id="exam_type" class="form-control">
+                    <option value="">All Types</option>
+                    {% for exam_type in exam_types %}
+                        <option value="{{ exam_type }}" {% if current_filters.exam_type == exam_type %}selected{% endif %}>
+                            {{ exam_type }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Level Filter -->
+            <div class="col-md-2 mb-3">
+                <label for="level">Level</label>
+                <select name="level" id="level" class="form-control">
+                    <option value="">All Levels</option>
+                    {% for level_value, level_name in levels %}
+                        <option value="{{ level_value }}" {% if current_filters.level == level_value %}selected{% endif %}>
+                            {{ level_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Show Solutions -->
+            <div class="col-md-2 mb-3">
+                <label for="show_solutions">Show Solutions</label>
+                <select name="show_solutions" id="show_solutions" class="form-control">
+                    <option value="false" {% if current_filters.show_solutions == 'false' %}selected{% endif %}>No</option>
+                    <option value="true" {% if current_filters.show_solutions == 'true' %}selected{% endif %}>Yes</option>
+                </select>
+            </div>
+
+            <!-- Filter Button -->
+            <div class="col-md-1 mb-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Exam Papers List -->
+<div class="row">
+    {% for paper in exam_papers %}
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card shadow h-100 {% if paper.is_solution %}border-success{% endif %}">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">{{ paper.title }}</h6>
+                {% if paper.is_solution %}
+                <span class="badge badge-success">Solution</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            {{ paper.course.name }} | {{ paper.get_level_display }}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ paper.year }} {{ paper.exam_type }}</div>
+                        <div class="mt-2 text-gray-600">{{ paper.description|truncatechars:100 }}</div>
+                        <div class="mt-2 text-xs text-gray-500">
+                            <i class="fas fa-eye fa-sm"></i> {{ paper.views }} views
+                            <span class="ml-2"><i class="fas fa-calendar fa-sm"></i> Added {{ paper.created_at|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'eduwize_app:exam-papers-detail' paper.id %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-eye fa-sm"></i> View
+                    </a>
+                    <div>
+                        <a href="{{ paper.file.url }}" class="btn btn-sm btn-success" target="_blank">
+                            <i class="fas fa-download fa-sm"></i> Download
+                        </a>
+                        {% if is_admin %}
+                        <a href="{% url 'eduwize_app:exam-papers-edit' paper.id %}" class="btn btn-sm btn-info">
+                            <i class="fas fa-edit fa-sm"></i>
+                        </a>
+                        <a href="{% url 'eduwize_app:exam-papers-delete' paper.id %}" class="btn btn-sm btn-danger delete-confirm" data-confirm-message="Are you sure you want to delete the exam paper '{{ paper.title }}'?">
+                            <i class="fas fa-trash fa-sm"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-file-alt fa-4x text-gray-300 mb-3"></i>
+                <h5 class="text-gray-700">No Exam Papers Available</h5>
+                <p class="text-gray-600">There are no exam papers matching your filters.</p>
+                <a href="{% url 'eduwize_app:exam-papers-add' %}" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus fa-sm"></i> Add New Exam Paper
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% for key, value in current_filters.items %}&{{ key }}={{ value }}{% endfor %}" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in current_filters.items %}&{{ key }}={{ value }}{% endfor %}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in current_filters.items %}&{{ key }}={{ value }}{% endfor %}">{{ num }}</a>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in current_filters.items %}&{{ key }}={{ value }}{% endfor %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in current_filters.items %}&{{ key }}={{ value }}{% endfor %}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in current_filters.items %}&{{ key }}={{ value }}{% endfor %}" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

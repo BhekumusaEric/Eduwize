@@ -1,0 +1,21 @@
+[Unit]
+Description=Eduwize Gunicorn daemon
+After=network.target postgresql.service redis.service
+
+[Service]
+User=eduwize
+Group=www-data
+WorkingDirectory=/home/eduwize/app
+EnvironmentFile=/home/eduwize/app/.env
+ExecStart=/home/eduwize/venv/bin/gunicorn \
+    --access-logfile - \
+    --workers 3 \
+    --bind unix:/home/eduwize/app/eduwize.sock \
+    Eduwize.wsgi:application
+Restart=on-failure
+RestartSec=5s
+KillMode=mixed
+TimeoutStopSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>Offline</title>
+    <g id="Offline" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle id="Background" fill="#F8F9FC" cx="256" cy="256" r="256"></circle>
+        <g id="Wifi-Disconnected" transform="translate(106.000000, 106.000000)">
+            <circle id="Circle" fill="#4E73DF" opacity="0.2" cx="150" cy="150" r="150"></circle>
+            <path d="M150,60 C189.915,60 225.274,79.9543 246.269,110.407" id="Arc1" stroke="#4E73DF" stroke-width="12" stroke-linecap="round"></path>
+            <path d="M53.7308,110.407 C74.7265,79.9543 110.085,60 150,60" id="Arc2" stroke="#4E73DF" stroke-width="12" stroke-linecap="round"></path>
+            <path d="M84.8528,141.716 C98.9949,121.005 122.801,107.5 150,107.5" id="Arc3" stroke="#4E73DF" stroke-width="12" stroke-linecap="round"></path>
+            <path d="M150,107.5 C177.199,107.5 201.005,121.005 215.147,141.716" id="Arc4" stroke="#4E73DF" stroke-width="12" stroke-linecap="round"></path>
+            <circle id="Dot" fill="#4E73DF" cx="150" cy="200" r="15"></circle>
+            <path d="M240,60 L60,240" id="Line" stroke="#F15E5E" stroke-width="12" stroke-linecap="round"></path>
+        </g>
+    </g>
+</svg>

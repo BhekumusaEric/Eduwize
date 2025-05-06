@@ -1,0 +1,28 @@
+{% extends 'eduwize_app/base_generic.html' %}
+{% load static %}
+
+{% block title %}Eduwize | Server Error{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-body text-center py-5">
+                    <img src="{% static 'img/500.svg' %}" alt="500 Error" class="img-fluid mb-4" style="max-width: 300px;">
+                    <h1 class="display-4 text-gray-800 mb-3">Server Error</h1>
+                    <p class="lead text-gray-600 mb-4">We're experiencing some technical difficulties. Our team has been notified and is working to fix the issue.</p>
+                    <div class="mt-4">
+                        <a href="{% url 'eduwize_app:home' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-home me-2"></i> Back to Home
+                        </a>
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg ms-2">
+                            <i class="fas fa-arrow-left me-2"></i> Go Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -4,7 +4,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Choices
 class StudyLevelChoices(models.TextChoices):
-    
+
     LEVEL_2 = 'NQF2', 'NQF Level 2'
     LEVEL_3 = 'NQF3', 'NQF Level 3'
     LEVEL_4 = 'NQF4', 'NQF Level 4'
@@ -12,6 +12,7 @@ class StudyLevelChoices(models.TextChoices):
 class ResourceTypeChoices(models.TextChoices):
     VIDEO = 'video', 'Video'
     DOCUMENT = 'document', 'Document'
+    EXAM_PAPER = 'exam_paper', 'Exam Paper'
 
 class QuestionTypeChoices(models.TextChoices):
     MULTIPLE_CHOICE = 'multiple_choice', 'Multiple Choice'
@@ -40,7 +41,7 @@ class Student(models.Model):
 
     def __str__(self):
         return self.user.username
-    
+
 class StudentFile(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='files')
     file = models.FileField(upload_to='profile_pictures/')
@@ -78,8 +79,8 @@ class StudyMaterial(models.Model):
     file = models.FileField(upload_to='study_materials/')
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     resource_type = models.CharField(
-        max_length=10, 
-        choices=ResourceTypeChoices.choices, 
+        max_length=10,
+        choices=ResourceTypeChoices.choices,
         default=ResourceTypeChoices.VIDEO
     )
     views = models.PositiveIntegerField(default=0)
@@ -152,9 +153,12 @@ class Feedback(models.Model):
         return self.feedback
 
 class AIChatbot(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True, related_name='chatbot_messages')
     question = models.TextField()
     answer = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    is_helpful = models.BooleanField(default=False)
+    feedback = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.question
@@ -184,3 +188,34 @@ class ActivityLog(models.Model):
 
     def __str__(self):
         return self.activity
+
+class ExamPaper(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    file = models.FileField(upload_to='exam_papers/')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='exam_papers')
+    year = models.PositiveIntegerField(help_text="The year of the exam paper (e.g., 2023)")
+    exam_type = models.CharField(max_length=50, help_text="Type of exam (e.g., Midterm, Final, Mock)")
+    level = models.CharField(
+        max_length=5,
+        choices=StudyLevelChoices.choices,
+        help_text="The study level this exam paper is for"
+    )
+    is_solution = models.BooleanField(default=False, help_text="Is this a solution paper?")
+    related_paper = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='solutions', help_text="If this is a solution, link to the original paper")
+    views = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-year', 'exam_type']
+        verbose_name = "Exam Paper"
+        verbose_name_plural = "Exam Papers"
+
+    def __str__(self):
+        return f"{self.title} ({self.year})"
+
+    def increment_views(self):
+        self.views += 1
+        self.save(update_fields=['views'])

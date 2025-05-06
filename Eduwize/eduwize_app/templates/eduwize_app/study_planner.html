@@ -1,0 +1,766 @@
+{% extends 'eduwize_app/base_generic.html' %}
+{% load static %}
+
+{% block title %}Eduwize | Study Planner{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calendar-container {
+        background-color: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        margin-bottom: 2rem;
+    }
+    
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    
+    .calendar-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .calendar-nav {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .calendar-nav-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: #f8f9fc;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .calendar-nav-btn:hover {
+        background-color: #4e73df;
+        color: white;
+    }
+    
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.5rem;
+        padding: 1rem;
+    }
+    
+    .calendar-weekday {
+        text-align: center;
+        font-weight: 700;
+        color: #5a5c69;
+        padding: 0.5rem;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+    
+    .calendar-day {
+        aspect-ratio: 1;
+        border-radius: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+    
+    .calendar-day:hover {
+        background-color: #f8f9fc;
+    }
+    
+    .calendar-day.active {
+        background-color: #4e73df;
+        color: white;
+    }
+    
+    .calendar-day.has-events::after {
+        content: '';
+        position: absolute;
+        bottom: 0.5rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background-color: #4e73df;
+    }
+    
+    .calendar-day.active.has-events::after {
+        background-color: white;
+    }
+    
+    .calendar-day-number {
+        font-weight: 700;
+        font-size: 1rem;
+    }
+    
+    .calendar-day-label {
+        font-size: 0.7rem;
+        color: #858796;
+    }
+    
+    .calendar-day.active .calendar-day-label {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .calendar-day.other-month {
+        opacity: 0.3;
+    }
+    
+    .task-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .task-item {
+        padding: 1rem;
+        border-bottom: 1px solid #e3e6f0;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s;
+    }
+    
+    .task-item:last-child {
+        border-bottom: none;
+    }
+    
+    .task-item:hover {
+        background-color: #f8f9fc;
+    }
+    
+    .task-checkbox {
+        margin-right: 1rem;
+    }
+    
+    .task-content {
+        flex-grow: 1;
+    }
+    
+    .task-title {
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    
+    .task-details {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: #858796;
+    }
+    
+    .task-detail {
+        display: flex;
+        align-items: center;
+    }
+    
+    .task-detail i {
+        margin-right: 0.25rem;
+    }
+    
+    .task-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .task-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: #f8f9fc;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #5a5c69;
+    }
+    
+    .task-btn:hover {
+        background-color: #4e73df;
+        color: white;
+    }
+    
+    .task-btn.delete:hover {
+        background-color: #e74a3b;
+    }
+    
+    .task-completed .task-title {
+        text-decoration: line-through;
+        color: #858796;
+    }
+    
+    .pomodoro-timer {
+        text-align: center;
+        padding: 2rem;
+        background-color: #f8f9fc;
+        border-radius: 0.5rem;
+    }
+    
+    .timer-display {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .timer-label {
+        font-size: 1rem;
+        color: #858796;
+        margin-bottom: 1.5rem;
+    }
+    
+    .timer-controls {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .timer-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        border: none;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .timer-btn.start {
+        background-color: #4e73df;
+        color: white;
+    }
+    
+    .timer-btn.start:hover {
+        background-color: #2e59d9;
+    }
+    
+    .timer-btn.pause {
+        background-color: #f6c23e;
+        color: white;
+    }
+    
+    .timer-btn.pause:hover {
+        background-color: #dda20a;
+    }
+    
+    .timer-btn.reset {
+        background-color: #e74a3b;
+        color: white;
+    }
+    
+    .timer-btn.reset:hover {
+        background-color: #be2617;
+    }
+    
+    .progress-container {
+        margin-top: 1.5rem;
+    }
+    
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.8rem;
+        color: #858796;
+    }
+    
+    .progress {
+        height: 0.5rem;
+        border-radius: 1rem;
+        background-color: #eaecf4;
+    }
+    
+    .progress-bar {
+        border-radius: 1rem;
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Study Planner</h1>
+    <div>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Add Task
+        </a>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-outline-primary shadow-sm ml-2">
+            <i class="fas fa-download fa-sm"></i> Export Schedule
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Calendar -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Monthly Calendar</h6>
+            </div>
+            <div class="card-body">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <h2 class="calendar-title">May 2024</h2>
+                        <div class="calendar-nav">
+                            <button class="calendar-nav-btn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="calendar-nav-btn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="calendar-weekday">Sun</div>
+                        <div class="calendar-weekday">Mon</div>
+                        <div class="calendar-weekday">Tue</div>
+                        <div class="calendar-weekday">Wed</div>
+                        <div class="calendar-weekday">Thu</div>
+                        <div class="calendar-weekday">Fri</div>
+                        <div class="calendar-weekday">Sat</div>
+                        
+                        <!-- Calendar days would be dynamically generated in a real app -->
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">28</span>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">29</span>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">30</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">1</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">2</span>
+                        </div>
+                        <div class="calendar-day has-events">
+                            <span class="calendar-day-number">3</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">4</span>
+                        </div>
+                        
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">5</span>
+                        </div>
+                        <div class="calendar-day has-events">
+                            <span class="calendar-day-number">6</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">7</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">8</span>
+                        </div>
+                        <div class="calendar-day has-events">
+                            <span class="calendar-day-number">9</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">10</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">11</span>
+                        </div>
+                        
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">12</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">13</span>
+                        </div>
+                        <div class="calendar-day has-events">
+                            <span class="calendar-day-number">14</span>
+                        </div>
+                        <div class="calendar-day active has-events">
+                            <span class="calendar-day-number">15</span>
+                            <span class="calendar-day-label">Today</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">16</span>
+                        </div>
+                        <div class="calendar-day has-events">
+                            <span class="calendar-day-number">17</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">18</span>
+                        </div>
+                        
+                        <!-- More days would follow... -->
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h5 class="font-weight-bold">Tasks for May 15, 2024</h5>
+                    <ul class="task-list">
+                        <li class="task-item task-completed">
+                            <input type="checkbox" class="task-checkbox" checked>
+                            <div class="task-content">
+                                <div class="task-title">Complete Python Assignment</div>
+                                <div class="task-details">
+                                    <div class="task-detail">
+                                        <i class="fas fa-clock"></i>
+                                        <span>09:00 AM - 11:00 AM</span>
+                                    </div>
+                                    <div class="task-detail">
+                                        <i class="fas fa-book"></i>
+                                        <span>Python Programming</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="task-btn">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="task-btn delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </li>
+                        <li class="task-item">
+                            <input type="checkbox" class="task-checkbox">
+                            <div class="task-content">
+                                <div class="task-title">Study Database Concepts</div>
+                                <div class="task-details">
+                                    <div class="task-detail">
+                                        <i class="fas fa-clock"></i>
+                                        <span>01:00 PM - 03:00 PM</span>
+                                    </div>
+                                    <div class="task-detail">
+                                        <i class="fas fa-book"></i>
+                                        <span>Database Design</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="task-btn">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="task-btn delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </li>
+                        <li class="task-item">
+                            <input type="checkbox" class="task-checkbox">
+                            <div class="task-content">
+                                <div class="task-title">Prepare for Web Development Quiz</div>
+                                <div class="task-details">
+                                    <div class="task-detail">
+                                        <i class="fas fa-clock"></i>
+                                        <span>04:00 PM - 06:00 PM</span>
+                                    </div>
+                                    <div class="task-detail">
+                                        <i class="fas fa-book"></i>
+                                        <span>Web Development</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="task-btn">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="task-btn delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Pomodoro Timer -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Pomodoro Timer</h6>
+            </div>
+            <div class="card-body">
+                <div class="pomodoro-timer">
+                    <div class="timer-display" id="timerDisplay">25:00</div>
+                    <div class="timer-label">Focus Time</div>
+                    <div class="timer-controls">
+                        <button class="timer-btn start" id="startTimer">
+                            <i class="fas fa-play mr-1"></i> Start
+                        </button>
+                        <button class="timer-btn pause" id="pauseTimer" disabled>
+                            <i class="fas fa-pause mr-1"></i> Pause
+                        </button>
+                        <button class="timer-btn reset" id="resetTimer">
+                            <i class="fas fa-redo mr-1"></i> Reset
+                        </button>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span>0%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Study Stats -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Study Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 mb-4">
+                        <div class="text-center">
+                            <div class="h4 font-weight-bold text-primary">12.5</div>
+                            <div class="small text-gray-600">Hours This Week</div>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-4">
+                        <div class="text-center">
+                            <div class="h4 font-weight-bold text-success">42</div>
+                            <div class="small text-gray-600">Hours This Month</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h4 font-weight-bold text-info">8</div>
+                            <div class="small text-gray-600">Tasks Completed</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h4 font-weight-bold text-warning">5</div>
+                            <div class="small text-gray-600">Tasks Pending</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6 class="font-weight-bold">Subject Distribution</h6>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Python Programming</span>
+                            <span>40%</span>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 40%" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        
+                        <div class="progress-label">
+                            <span>Database Design</span>
+                            <span>25%</span>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        
+                        <div class="progress-label">
+                            <span>Web Development</span>
+                            <span>20%</span>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        
+                        <div class="progress-label">
+                            <span>Data Structures</span>
+                            <span>15%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTaskModalLabel">Add New Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="taskTitle" class="form-label">Task Title</label>
+                        <input type="text" class="form-control" id="taskTitle" placeholder="Enter task title">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="taskDate" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="taskDate">
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="startTime" class="form-label">Start Time</label>
+                            <input type="time" class="form-control" id="startTime">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="endTime" class="form-label">End Time</label>
+                            <input type="time" class="form-control" id="endTime">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="taskCourse" class="form-label">Course</label>
+                        <select class="form-select" id="taskCourse">
+                            <option selected>Select a course</option>
+                            <option value="1">Python Programming</option>
+                            <option value="2">Database Design</option>
+                            <option value="3">Web Development</option>
+                            <option value="4">Data Structures</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="taskDescription" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="taskPriority" class="form-label">Priority</label>
+                        <select class="form-select" id="taskPriority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Add Task</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pomodoro Timer Functionality
+        const timerDisplay = document.getElementById('timerDisplay');
+        const startBtn = document.getElementById('startTimer');
+        const pauseBtn = document.getElementById('pauseTimer');
+        const resetBtn = document.getElementById('resetTimer');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressLabel = document.querySelector('.progress-label span:last-child');
+        
+        let timer;
+        let timeLeft = 25 * 60; // 25 minutes in seconds
+        const totalTime = timeLeft;
+        let isRunning = false;
+        
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            const progress = Math.round(((totalTime - timeLeft) / totalTime) * 100);
+            progressBar.style.width = `${progress}%`;
+            progressLabel.textContent = `${progress}%`;
+        }
+        
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                
+                timer = setInterval(function() {
+                    timeLeft--;
+                    updateTimer();
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        isRunning = false;
+                        startBtn.disabled = false;
+                        pauseBtn.disabled = true;
+                        alert('Time is up! Take a break.');
+                    }
+                }, 1000);
+            }
+        }
+        
+        function pauseTimer() {
+            clearInterval(timer);
+            isRunning = false;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+        }
+        
+        function resetTimer() {
+            clearInterval(timer);
+            isRunning = false;
+            timeLeft = totalTime;
+            updateTimer();
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+        }
+        
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        
+        // Initialize progress bars
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(function(bar) {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            
+            setTimeout(function() {
+                bar.style.width = width;
+            }, 300);
+        });
+        
+        // Task checkbox functionality
+        const taskCheckboxes = document.querySelectorAll('.task-checkbox');
+        taskCheckboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                const taskItem = this.closest('.task-item');
+                if (this.checked) {
+                    taskItem.classList.add('task-completed');
+                } else {
+                    taskItem.classList.remove('task-completed');
+                }
+            });
+        });
+        
+        // Calendar day selection
+        const calendarDays = document.querySelectorAll('.calendar-day');
+        calendarDays.forEach(function(day) {
+            day.addEventListener('click', function() {
+                calendarDays.forEach(d => d.classList.remove('active'));
+                this.classList.add('active');
+                // In a real app, this would load tasks for the selected day
+            });
+        });
+    });
+</script>
+{% endblock %}

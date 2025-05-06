@@ -1,28 +1,651 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Learning Platform{% endblock %}</title>
+    <meta name="description" content="Eduwize - AI-Powered Learning Platform for College Students">
+    <title>{% block title %}Eduwize | Learning Platform{% endblock %}</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4e73df">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Eduwize">
+    <meta name="application-name" content="Eduwize">
+    <meta name="msapplication-TileColor" content="#4e73df">
+    <meta name="msapplication-TileImage" content="{% static 'eduwize_app/images/icons/icon-144x144.png' %}">
+
+    <!-- PWA Icons -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'eduwize_app/images/icons/icon-192x192.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'eduwize_app/images/icons/apple-icon-180x180.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'eduwize_app/images/icons/apple-icon-152x152.png' %}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'eduwize_app/images/icons/apple-icon-120x120.png' %}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'eduwize_app/images/icons/apple-icon-76x76.png' %}">
+
+    <!-- Apple Splash Screens -->
+    <link rel="apple-touch-startup-image" href="{% static 'eduwize_app/images/splash/apple-splash-2048-2732.png' %}" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="{% static 'eduwize_app/images/splash/apple-splash-1668-2388.png' %}" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="{% static 'eduwize_app/images/splash/apple-splash-1536-2048.png' %}" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="{% static 'eduwize_app/images/splash/apple-splash-1125-2436.png' %}" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="{% static 'eduwize_app/images/splash/apple-splash-750-1334.png' %}" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="{% static 'eduwize_app/images/splash/apple-splash-640-1136.png' %}" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        /* Sidebar */
+        .sidebar {
+          min-width: 250px;
+          max-width: 250px;
+          background: #4e73df;
+          background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+          color: white;
+          transition: all 0.3s;
+          position: fixed;
+          height: 100vh;
+          z-index: 999;
+        }
+
+        .sidebar .sidebar-brand {
+          height: 4.375rem;
+          text-decoration: none;
+          font-size: 1rem;
+          font-weight: 800;
+          padding: 1.5rem 1rem;
+          text-align: center;
+          letter-spacing: 0.05rem;
+          z-index: 1;
+        }
+
+        .sidebar hr {
+          margin: 0 1rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .sidebar .nav-item {
+          position: relative;
+        }
+
+        .sidebar .nav-item .nav-link {
+          display: block;
+          width: 100%;
+          text-align: left;
+          padding: 0.75rem 1rem;
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        .sidebar .nav-item .nav-link:hover {
+          color: #fff;
+        }
+
+        .sidebar .nav-item .nav-link i {
+          margin-right: 0.25rem;
+        }
+
+        .sidebar .nav-item.active .nav-link {
+          font-weight: 700;
+        }
+
+        .sidebar-heading {
+          padding: 0 1rem;
+          font-weight: 800;
+          font-size: 0.65rem;
+          color: rgba(255, 255, 255, 0.4);
+          text-transform: uppercase;
+          margin-top: 1rem;
+        }
+
+        /* Content */
+        .content {
+          width: 100%;
+          padding: 1.5rem;
+          margin-left: 250px;
+          transition: all 0.3s;
+        }
+
+        /* Messages */
+        .messages-container {
+            position: relative;
+            z-index: 1000;
+        }
+
+        .alert {
+            margin-bottom: 1rem;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+
+        .alert-success {
+            color: #0f5132;
+            background-color: #d1e7dd;
+            border-color: #badbcc;
+        }
+
+        .alert-danger {
+            color: #842029;
+            background-color: #f8d7da;
+            border-color: #f5c2c7;
+        }
+
+        .alert-warning {
+            color: #664d03;
+            background-color: #fff3cd;
+            border-color: #ffecb5;
+        }
+
+        .alert-info {
+            color: #055160;
+            background-color: #cff4fc;
+            border-color: #b6effb;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1060;
+        }
+
+        /* Confirmation modal */
+        .modal-confirm .modal-header {
+            border-bottom: none;
+            position: relative;
+        }
+
+        .modal-confirm .modal-content {
+            border-radius: 0.5rem;
+        }
+
+        .modal-confirm .modal-footer {
+            border-top: none;
+            padding: 10px 15px 25px;
+        }
+
+        .modal-confirm .icon-box {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            border-radius: 50%;
+            z-index: 9;
+            text-align: center;
+            border: 3px solid #f15e5e;
+        }
+
+        .modal-confirm .icon-box i {
+            color: #f15e5e;
+            font-size: 46px;
+            display: inline-block;
+            margin-top: 13px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+          .sidebar {
+            margin-left: -250px;
+          }
+
+          .sidebar.active {
+            margin-left: 0;
+          }
+
+          .content {
+            margin-left: 0;
+          }
+
+          .content.active {
+            margin-left: 250px;
+          }
+
+          #sidebarCollapse span {
+            display: none;
+          }
+
+          /* Responsive tables */
+          .table-responsive {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          /* Responsive forms */
+          .form-group {
+            margin-bottom: 1rem;
+          }
+
+          /* Adjust card layouts */
+          .card-deck {
+            display: block;
+          }
+
+          .card-deck .card {
+            margin-bottom: 15px;
+          }
+
+          /* Adjust button sizes for touch */
+          .btn {
+            padding: 0.5rem 1rem;
+          }
+
+          /* Improve form controls on mobile */
+          .form-control {
+            height: calc(1.5em + 0.75rem + 10px);
+          }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <header>
-        <h1>AI-Powered Learning Platform</h1>
-        <nav>
-            <ul>
-                <li><a href="{% url 'eduwize_app:home' %}">Home</a></li>
-                <li><a href="{% url 'eduwize_app:student-list' %}">Students</a></li>
-                <li><a href="{% url 'eduwize_app:course-list' %}">Courses</a></li>
-                <li><a href="{% url 'eduwize_app:quiz-list' %}">Quizzes</a></li>
-                <li><a href="{% url 'eduwize_app:performance-list' %}">Performance</a></li>
-                <li><a href="{% url 'eduwize_app:feedback' %}">Feedback</a></li>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-brand d-flex align-items-center justify-content-center">
+                <div class="sidebar-brand-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="sidebar-brand-text mx-3">Eduwize</div>
+            </div>
+
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">
+                Core
+            </div>
+
+            <ul class="nav flex-column">
+                <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:home' %}">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <hr class="sidebar-divider">
+
+                <div class="sidebar-heading">
+                    Learning
+                </div>
+
+                <li class="nav-item {% if 'course' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:course-list' %}">
+                        <i class="fas fa-fw fa-book"></i>
+                        <span>Courses</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {% if 'quiz' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:quiz-list' %}">
+                        <i class="fas fa-fw fa-question-circle"></i>
+                        <span>Quizzes</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {% if 'exam-papers' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:exam-papers-list' %}">
+                        <i class="fas fa-fw fa-file-alt"></i>
+                        <span>Past Exam Papers</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {% if 'performance' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:performance-list' %}">
+                        <i class="fas fa-fw fa-chart-line"></i>
+                        <span>Performance</span>
+                    </a>
+                </li>
+
+                <hr class="sidebar-divider">
+
+                <div class="sidebar-heading">
+                    Community
+                </div>
+
+                <li class="nav-item {% if 'student' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:student-list' %}">
+                        <i class="fas fa-fw fa-users"></i>
+                        <span>Students</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {% if 'feedback' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:feedback' %}">
+                        <i class="fas fa-fw fa-comment"></i>
+                        <span>Feedback</span>
+                    </a>
+                </li>
+
+                <hr class="sidebar-divider">
+
+                <div class="sidebar-heading">
+                    Study Tools
+                </div>
+
+                <li class="nav-item {% if 'study-planner' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:study-planner' %}">
+                        <i class="fas fa-fw fa-calendar-alt"></i>
+                        <span>Study Planner</span>
+                    </a>
+                </li>
+
+                <div class="sidebar-heading">
+                    AI Tools
+                </div>
+
+                <li class="nav-item {% if 'ai-chatbot' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:ai-chatbot' %}">
+                        <i class="fas fa-fw fa-robot"></i>
+                        <span>AI Chatbot</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {% if 'ai-recommendations' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:ai-recommendations' %}">
+                        <i class="fas fa-fw fa-lightbulb"></i>
+                        <span>Recommendations</span>
+                    </a>
+                </li>
             </ul>
         </nav>
-    </header>
 
-    <main>
-        {% block content %}
-        {% endblock %}
-    </main>
+        <!-- Content -->
+        <div class="content">
+            <!-- Topbar -->
+            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <!-- Sidebar Toggle (Topbar) -->
+                <button id="sidebarToggle" class="btn btn-link d-md-none rounded-circle mr-3">
+                    <i class="fa fa-bars"></i>
+                </button>
+
+                <!-- Search Form -->
+                <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                    <div class="input-group">
+                        <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">
+                                <i class="fas fa-search fa-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Topbar Navbar -->
+                <ul class="navbar-nav ml-auto">
+                    <!-- Nav Item - Notifications -->
+                    <li class="nav-item dropdown no-arrow mx-1">
+                        <a class="nav-link dropdown-toggle" href="{% url 'eduwize_app:notifications-list' %}" id="alertsDropdown">
+                            <i class="fas fa-bell fa-fw"></i>
+                            <!-- Counter - Alerts -->
+                            <span class="badge badge-danger badge-counter" id="notificationCount">3+</span>
+                        </a>
+                    </li>
+
+                    <div class="topbar-divider d-none d-sm-block"></div>
+
+                    <!-- Nav Item - User Information -->
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                                {% if user.is_authenticated %}
+                                    {{ user.username }}
+                                {% else %}
+                                    Guest
+                                {% endif %}
+                            </span>
+                            <img class="img-profile rounded-circle" src="https://via.placeholder.com/150" width="32" height="32">
+                        </a>
+                        <!-- Dropdown - User Information -->
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                            {% if user.is_authenticated %}
+                                <a class="dropdown-item" href="{% url 'eduwize_app:profile' %}">
+                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Profile
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{% url 'users:logout' %}">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Logout
+                                </a>
+                            {% else %}
+                                <a class="dropdown-item" href="{% url 'users:login' %}">
+                                    <i class="fas fa-sign-in-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Login
+                                </a>
+                                <a class="dropdown-item" href="{% url 'users:signup' %}">
+                                    <i class="fas fa-user-plus fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Register
+                                </a>
+                            {% endif %}
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <div class="container-fluid">
+                <!-- Messages -->
+                {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% elif message.tags == 'info' %}fa-info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}
+                {% endblock %}
+            </div>
+
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>&copy; 2024 Eduwize - AI-Powered Learning Platform</span>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Toast Container for Notifications -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <!-- Toasts will be dynamically added here -->
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-confirm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="icon-box">
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <h4 class="modal-title w-100" id="confirmationModalLabel">Are you sure?</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center" id="confirmationMessage">Do you really want to delete this record? This process cannot be undone.</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmAction">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle sidebar on mobile
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelector('.sidebar').classList.toggle('active');
+                    document.querySelector('.content').classList.toggle('active');
+                });
+            }
+
+            // Auto-dismiss alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    const closeButton = alert.querySelector('.btn-close');
+                    if (closeButton) {
+                        closeButton.click();
+                    }
+                }, 5000);
+            });
+
+            // Setup confirmation dialog
+            const confirmationModal = document.getElementById('confirmationModal');
+            if (confirmationModal) {
+                const modal = new bootstrap.Modal(confirmationModal);
+                const confirmBtn = document.getElementById('confirmAction');
+
+                // Handle delete confirmation links
+                document.querySelectorAll('.delete-confirm').forEach(function(link) {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const targetUrl = this.getAttribute('href');
+                        const message = this.getAttribute('data-confirm-message') || 'Do you really want to delete this record? This process cannot be undone.';
+                        const buttonText = this.getAttribute('data-confirm-button') || 'Delete';
+
+                        document.getElementById('confirmationMessage').textContent = message;
+                        confirmBtn.textContent = buttonText;
+
+                        confirmBtn.onclick = function() {
+                            window.location.href = targetUrl;
+                        };
+
+                        modal.show();
+                    });
+                });
+            }
+
+            // Function to show toast notifications
+            window.showToast = function(message, type = 'success') {
+                const toastContainer = document.querySelector('.toast-container');
+                if (!toastContainer) return;
+
+                const toastId = 'toast-' + Date.now();
+                const toastHtml = `
+                    <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'danger' ? 'fa-exclamation-circle' : 'fa-info-circle'} me-2"></i>
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                const toastElement = document.getElementById(toastId);
+                const toast = new bootstrap.Toast(toastElement, { autohide: true, delay: 5000 });
+                toast.show();
+
+                // Remove toast from DOM after it's hidden
+                toastElement.addEventListener('hidden.bs.toast', function() {
+                    toastElement.remove();
+                });
+            };
+
+            // Add responsive table wrappers
+            document.querySelectorAll('table.table').forEach(function(table) {
+                if (!table.parentElement.classList.contains('table-responsive')) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'table-responsive';
+                    table.parentNode.insertBefore(wrapper, table);
+                    wrapper.appendChild(table);
+                }
+            });
+
+            // Check if the app is running in standalone mode (PWA)
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('App is running in standalone mode (PWA)');
+                document.body.classList.add('pwa-mode');
+
+                // Add a back button for PWA navigation
+                if (!document.querySelector('.pwa-back-button') && window.history.length > 1) {
+                    const backButton = document.createElement('button');
+                    backButton.className = 'pwa-back-button';
+                    backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
+                    backButton.addEventListener('click', () => {
+                        window.history.back();
+                    });
+                    document.body.appendChild(backButton);
+                }
+            }
+
+            // Add PWA-specific styles
+            if (!document.getElementById('pwa-styles')) {
+                const pwaStyles = document.createElement('style');
+                pwaStyles.id = 'pwa-styles';
+                pwaStyles.textContent = `
+                    .pwa-mode {
+                        padding-top: env(safe-area-inset-top);
+                        padding-bottom: env(safe-area-inset-bottom);
+                        padding-left: env(safe-area-inset-left);
+                        padding-right: env(safe-area-inset-right);
+                    }
+
+                    .pwa-back-button {
+                        position: fixed;
+                        bottom: 20px;
+                        left: 20px;
+                        width: 50px;
+                        height: 50px;
+                        border-radius: 50%;
+                        background-color: #4e73df;
+                        color: white;
+                        border: none;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                        z-index: 1040;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 20px;
+                    }
+
+                    @media (display-mode: standalone) {
+                        .navbar {
+                            padding-top: env(safe-area-inset-top);
+                        }
+
+                        .sidebar {
+                            padding-top: env(safe-area-inset-top);
+                        }
+                    }
+                `;
+                document.head.appendChild(pwaStyles);
+            }
+        });
+    </script>
+
+    <!-- PWA Scripts -->
+    <script src="{% static 'eduwize_app/js/pwa.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

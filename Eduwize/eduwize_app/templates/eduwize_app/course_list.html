@@ -1,10 +1,146 @@
-{% extends 'eduwize_app/base.html' %}
+{% extends 'eduwize_app/base_generic.html' %}
+{% load static %}
+
+{% block title %}Eduwize | Courses{% endblock %}
 
 {% block content %}
-  <h2>Course List</h2>
-  <ul>
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Courses</h1>
+    {% if is_admin %}
+    <a href="{% url 'eduwize_app:course-add' %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+        <i class="fas fa-plus fa-sm text-white-50"></i> Add New Course
+    </a>
+    {% endif %}
+</div>
+
+<!-- Content Row -->
+<div class="row">
     {% for course in courses %}
-      <li>{{ course.name }} - {{ course.level }}</li>
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card shadow h-100">
+            {% if course.thumbnail %}
+            <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.name }}" style="height: 160px; object-fit: cover;">
+            {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 160px;">
+                <i class="fas fa-book fa-3x text-gray-300"></i>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-primary">{{ course.get_level_display }}</span>
+                    <span class="text-xs text-gray-500">
+                        <i class="fas fa-users fa-sm"></i> {{ course.enrollment_set.count }} students
+                    </span>
+                </div>
+                <h5 class="card-title">{{ course.name }}</h5>
+                <p class="card-text text-gray-600">{{ course.description|truncatechars:100 }}</p>
+            </div>
+            <div class="card-footer bg-white border-top-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'eduwize_app:course-detail' course.id %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-info-circle fa-sm"></i> Details
+                    </a>
+                    {% if is_admin %}
+                    <div>
+                        <a href="{% url 'eduwize_app:course-edit' course.id %}" class="btn btn-sm btn-circle btn-outline-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'eduwize_app:course-delete' course.id %}" class="btn btn-sm btn-circle btn-outline-danger delete-confirm" data-confirm-message="Are you sure you want to delete the course '{{ course.name }}'?">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-book-open fa-4x text-gray-300 mb-3"></i>
+                <h5 class="text-gray-700">No Courses Available</h5>
+                <p class="text-gray-600">There are no courses available at the moment.</p>
+                {% if is_admin %}
+                <a href="{% url 'eduwize_app:course-add' %}" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus fa-sm"></i> Add New Course
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
     {% endfor %}
-  </ul>
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

@@ -52,6 +52,13 @@ urlpatterns = [
     path('performances/', views.PerformanceListView.as_view(), name='performance-list'),
     path('performances/<int:pk>/', views.PerformanceDetailView.as_view(), name='performance-detail'),
 
+    # Exam Paper URLs
+    path('exam-papers/', views.ExamPaperListView.as_view(), name='exam-papers-list'),
+    path('exam-papers/<int:pk>/', views.ExamPaperDetailView.as_view(), name='exam-papers-detail'),
+    path('exam-papers/add/', views.ExamPaperCreateView.as_view(), name='exam-papers-add'),
+    path('exam-papers/<int:pk>/edit/', views.ExamPaperUpdateView.as_view(), name='exam-papers-edit'),
+    path('exam-papers/<int:pk>/delete/', views.ExamPaperDeleteView.as_view(), name='exam-papers-delete'),
+
     # General Pages
     path('', views.HomePageView.as_view(), name='home'),
     path('home.html', views.HomePageView.as_view(), name='home'),
@@ -59,8 +66,14 @@ urlpatterns = [
     path('feedback/', views.FeedbackFormView.as_view(), name='feedback'),
     path('ai-chatbot/', views.AIChatbotView.as_view(), name='ai-chatbot'),
     path('ai-recommendations/', views.AIRecommendationsView.as_view(), name='ai-recommendations'),
+    path('study-planner/', views.StudyPlannerView.as_view(), name='study-planner'),
     path('tags/', views.TagsListView.as_view(), name='tags'),
     path('activity-log/', views.ActivityLogView.as_view(), name='activity-log'),
     path('profile/', views.profile, name='profile'),
 
+    # Health check endpoint
+    path('health/', views.health_check, name='health-check'),
+
+    # PWA offline page
+    path('offline/', views.offline_view, name='offline'),
 ]

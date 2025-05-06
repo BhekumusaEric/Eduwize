@@ -1,0 +1,66 @@
+{% extends 'eduwize_app/base_generic.html' %}
+{% load static %}
+
+{% block title %}Eduwize | Delete Exam Paper{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Delete Exam Paper</h1>
+    <a href="{% url 'eduwize_app:exam-papers-list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+        <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Exam Papers
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-danger">Confirm Deletion</h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading">Warning!</h4>
+                    <p>Are you sure you want to delete the exam paper "{{ exam_paper.title }}"?</p>
+                    <hr>
+                    <p class="mb-0">This action cannot be undone. All data associated with this exam paper will be permanently deleted.</p>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="font-weight-bold">Title</h5>
+                        <p>{{ exam_paper.title }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="font-weight-bold">Course</h5>
+                        <p>{{ exam_paper.course.name }}</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="font-weight-bold">Year</h5>
+                        <p>{{ exam_paper.year }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="font-weight-bold">Exam Type</h5>
+                        <p>{{ exam_paper.exam_type }}</p>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash mr-1"></i> Yes, Delete Exam Paper
+                        </button>
+                        <a href="{% url 'eduwize_app:exam-papers-list' %}" class="btn btn-secondary ml-2">
+                            <i class="fas fa-times mr-1"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

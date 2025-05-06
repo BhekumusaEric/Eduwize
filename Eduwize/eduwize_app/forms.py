@@ -1,5 +1,5 @@
 from django import forms
-from .models import Student, Course, Enrollment, StudyMaterial, Quiz, Question, PerformanceAnalysis, Notification, Feedback, AIChatbot, AIRecommendation, Tags, ActivityLog ,  StudentFile
+from .models import Student, Course, Enrollment, StudyMaterial, Quiz, Question, PerformanceAnalysis, Notification, Feedback, AIChatbot, AIRecommendation, Tags, ActivityLog, StudentFile, ExamPaper
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
@@ -126,4 +126,14 @@ class StudentFileForm(forms.ModelForm):
         fields = ['file']
         widgets = {
             'file': forms.ClearableFileInput(),
-            }
+        }
+
+class ExamPaperForm(forms.ModelForm):
+    class Meta:
+        model = ExamPaper
+        fields = ['title', 'description', 'file', 'course', 'year', 'exam_type', 'level', 'is_solution', 'related_paper']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
+            'file': forms.ClearableFileInput(),
+            'year': forms.NumberInput(attrs={'min': 2000, 'max': 2100}),
+        }

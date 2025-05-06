@@ -1,48 +1,295 @@
-{% extends 'eduwize_app/base.html' %}
+{% extends 'eduwize_app/base_generic.html' %}
 {% load static %}
+
+{% block title %}Eduwize | Dashboard{% endblock %}
+
 {% block content %}
-<form action="{% url 'users:logout' %}" method="POST">
-    {% csrf_token %}
-    <button type="submit">Logout</button>
-</form>
-<a href="{% url 'eduwize_app:profile' %}"> Profile</a>
-<a href="{% url 'users:signup' %}"> Signup </a>
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <h1>Dashboard</h1>
-            <p>Here you can see all the courses you have created.</p>
-            <div class="row">
-                <div class="col-md-12">
-                    <a href="{% url 'eduwize_app:enrollment-add' %}" class="btn btn-primary">Create Course</a>
-                </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Level</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for course in courses %}
-                                <tr>
-                                    <td>{{ course.name }}</td>
-                                    <td>{{ course.level }}</td>
-                                    <td>
-                                        <a href="{% url 'eduwize_app:course-edit' course.id %}" class="btn btn-primary">Edit</a>
-                                        <a href="{% url 'eduwize_app:course-delete' course.id %}" class="btn btn-danger">Delete</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+    <a href="{% url 'eduwize_app:course-add' %}" class="d-none d-sm-inline-block btn btn-primary shadow-sm">
+        <i class="fas fa-plus fa-sm text-white-50"></i> Create New Course
+    </a>
+</div>
+
+<!-- Content Row - Stats -->
+<div class="row">
+    <!-- Courses Enrolled -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Courses Enrolled</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {% if user.is_authenticated and user.student %}
+                                {{ user.student.courses_enrolled.count }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </div>
                     </div>
-                </div>  
+                    <div class="col-auto">
+                        <i class="fas fa-book fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quizzes Completed -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Quizzes Completed</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {% if user.is_authenticated and user.student %}
+                                {{ user.student.performanceanalysis_set.count }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Average Score -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Average Score
+                        </div>
+                        <div class="row no-gutters align-items-center">
+                            <div class="col-auto">
+                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">78%</div>
+                            </div>
+                            <div class="col">
+                                <div class="progress progress-sm mr-2">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Notifications -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Pending Notifications</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {% if user.is_authenticated and user.student %}
+                                {{ user.student.notification_set.filter.count }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-bell fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Content Row - Course List and Activity -->
+<div class="row">
+    <!-- Course List -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">My Courses</h6>
+                <div class="dropdown no-arrow">
+                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                        <div class="dropdown-header">Course Options:</div>
+                        <a class="dropdown-item" href="{% url 'eduwize_app:course-list' %}">View All Courses</a>
+                        <a class="dropdown-item" href="{% url 'eduwize_app:course-add' %}">Add New Course</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="courseTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Course Name</th>
+                                <th>Level</th>
+                                <th>Duration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'eduwize_app:course-detail' course.id %}" class="font-weight-bold text-primary">
+                                        {{ course.name }}
+                                    </a>
+                                </td>
+                                <td>{{ course.get_level_display }}</td>
+                                <td>{{ course.duration }}</td>
+                                <td>
+                                    <a href="{% url 'eduwize_app:course-detail' course.id %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'eduwize_app:course-edit' course.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'eduwize_app:course-delete' course.id %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No courses available. <a href="{% url 'eduwize_app:course-add' %}">Create your first course</a>.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+            </div>
+            <div class="card-body">
+                <div class="activity-feed">
+                    {% for activity in activities|slice:":5" %}
+                    <div class="activity-item">
+                        <div class="activity-icon bg-primary">
+                            <i class="fas fa-user-graduate text-white"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p class="mb-0">{{ activity.description }}</p>
+                            <small class="text-muted">{{ activity.created_at|timesince }} ago</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-history fa-3x text-gray-300 mb-3"></i>
+                        <p>No recent activity to display.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Recommendations -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">AI Recommendations</h6>
+            </div>
+            <div class="card-body">
+                <div class="ai-recommendations">
+                    <div class="recommendation-item">
+                        <i class="fas fa-lightbulb text-warning mr-2"></i>
+                        <span>Based on your interests, try <a href="#">Advanced Python Programming</a></span>
+                    </div>
+                    <div class="recommendation-item">
+                        <i class="fas fa-lightbulb text-warning mr-2"></i>
+                        <span>You might enjoy <a href="#">Data Structures & Algorithms</a></span>
+                    </div>
+                    <div class="recommendation-item">
+                        <i class="fas fa-lightbulb text-warning mr-2"></i>
+                        <span>Complete your <a href="#">Web Development</a> quiz</span>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'eduwize_app:ai-recommendations' %}" class="btn btn-sm btn-primary">View All Recommendations</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Row - Upcoming Quizzes -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Upcoming Quizzes</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for quiz in quizzes|slice:":3" %}
+                    <div class="col-lg-4 mb-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ quiz.title }}</h5>
+                                <p class="card-text">{{ quiz.description|truncatechars:100 }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-primary">{{ quiz.course.name }}</span>
+                                    <a href="{% url 'eduwize_app:quiz-detail' quiz.id %}" class="btn btn-sm btn-primary">Take Quiz</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-4">
+                        <i class="fas fa-clipboard-list fa-3x text-gray-300 mb-3"></i>
+                        <p>No upcoming quizzes available.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Additional JavaScript for the dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize search functionality
+        const searchInput = document.getElementById('courseSearch');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const searchTerm = this.value.toLowerCase();
+                const courseRows = document.querySelectorAll('#courseTable tbody tr');
+
+                courseRows.forEach(function(row) {
+                    const courseName = row.querySelector('td:first-child').textContent.toLowerCase();
+
+                    if (courseName.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}

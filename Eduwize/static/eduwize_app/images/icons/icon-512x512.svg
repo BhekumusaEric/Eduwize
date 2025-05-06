@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>Eduwize App Icon</title>
+    <g id="App-Icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Background" fill="#4E73DF" x="0" y="0" width="512" height="512" rx="128"></rect>
+        <g id="Graduation-Cap" transform="translate(106.000000, 156.000000)" fill="#FFFFFF">
+            <path d="M300,80 L150,0 L0,80 L0,85 C0,107.091 17.909,125 40,125 C62.091,125 80,107.091 80,85 L80,120 C80,142.091 106.863,160 140,160 L160,160 C193.137,160 220,142.091 220,120 L220,85 C220,107.091 237.909,125 260,125 C282.091,125 300,107.091 300,85 L300,80 Z M150,40 L240,80 L150,120 L60,80 L150,40 Z" id="Shape" fill-rule="nonzero"></path>
+        </g>
+        <text id="E" font-family="Nunito-ExtraBold, Nunito" font-size="200" font-weight="600" fill="#FFFFFF">
+            <tspan x="206" y="320">E</tspan>
+        </text>
+    </g>
+</svg>

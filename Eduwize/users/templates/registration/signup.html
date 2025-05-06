@@ -1,12 +1,258 @@
-<!-- signup.html -->
-<h2>Sign Up</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <h3>Account Information</h3>
-    {{ user_form.as_p }}
-    
-    <h3>Student Information</h3>
-    {{ student_form.as_p }}
-    
-    <button type="submit">Sign Up</button>
-</form>
+{% extends 'eduwize_app/base_generic.html' %}
+{% load static %}
+
+{% block title %}Eduwize | Sign Up{% endblock %}
+
+{% block extra_css %}
+<style>
+    .signup-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .signup-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        overflow: hidden;
+    }
+
+    .signup-header {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .signup-logo {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+    }
+
+    .signup-subtitle {
+        font-size: 1rem;
+        opacity: 0.8;
+    }
+
+    .signup-body {
+        padding: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control {
+        height: calc(1.5em + 1rem + 2px);
+        padding: 0.5rem 1rem;
+        border-radius: 0.35rem;
+    }
+
+    .form-control:focus {
+        border-color: #bac8f3;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+
+    .btn-signup {
+        padding: 0.75rem;
+        font-size: 1rem;
+        border-radius: 0.35rem;
+        font-weight: 700;
+    }
+
+    .signup-footer {
+        text-align: center;
+        padding: 1rem;
+        background-color: #f8f9fc;
+        border-top: 1px solid #e3e6f0;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e3e6f0;
+    }
+
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: -0.5rem;
+        margin-left: -0.5rem;
+    }
+
+    .form-col {
+        flex: 0 0 50%;
+        max-width: 50%;
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .form-col {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+    }
+
+    .help-text {
+        font-size: 0.8rem;
+        color: #858796;
+        margin-top: 0.25rem;
+    }
+
+    .error-text {
+        color: #e74a3b;
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="signup-container">
+        <div class="card signup-card">
+            <div class="signup-header">
+                <div class="signup-logo">
+                    <i class="fas fa-graduation-cap mr-2"></i> Eduwize
+                </div>
+                <div class="signup-subtitle">
+                    Create your account and start learning today!
+                </div>
+            </div>
+
+            <div class="signup-body">
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    Please correct the errors below.
+                </div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="section-title">
+                        <i class="fas fa-user-circle mr-2"></i> Account Information
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="{{ user_form.username.id_for_label }}">Username</label>
+                                {{ user_form.username }}
+                                {% if user_form.username.errors %}
+                                    <div class="error-text">{{ user_form.username.errors }}</div>
+                                {% endif %}
+                                {% if user_form.username.help_text %}
+                                    <div class="help-text">{{ user_form.username.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="{{ user_form.email.id_for_label }}">Email</label>
+                                {{ user_form.email }}
+                                {% if user_form.email.errors %}
+                                    <div class="error-text">{{ user_form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="{{ user_form.password1.id_for_label }}">Password</label>
+                                {{ user_form.password1 }}
+                                {% if user_form.password1.errors %}
+                                    <div class="error-text">{{ user_form.password1.errors }}</div>
+                                {% endif %}
+                                {% if user_form.password1.help_text %}
+                                    <div class="help-text">{{ user_form.password1.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="{{ user_form.password2.id_for_label }}">Confirm Password</label>
+                                {{ user_form.password2 }}
+                                {% if user_form.password2.errors %}
+                                    <div class="error-text">{{ user_form.password2.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title mt-4">
+                        <i class="fas fa-graduation-cap mr-2"></i> Student Information
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="{{ student_form.student_id.id_for_label }}">Student ID</label>
+                                {{ student_form.student_id }}
+                                {% if student_form.student_id.errors %}
+                                    <div class="error-text">{{ student_form.student_id.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="{{ student_form.level.id_for_label }}">Level</label>
+                                {{ student_form.level }}
+                                {% if student_form.level.errors %}
+                                    <div class="error-text">{{ student_form.level.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ student_form.profile_picture.id_for_label }}">Profile Picture</label>
+                        {{ student_form.profile_picture }}
+                        {% if student_form.profile_picture.errors %}
+                            <div class="error-text">{{ student_form.profile_picture.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ student_form.bio.id_for_label }}">Bio</label>
+                        {{ student_form.bio }}
+                        {% if student_form.bio.errors %}
+                            <div class="error-text">{{ student_form.bio.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block btn-signup mt-4">
+                        <i class="fas fa-user-plus mr-2"></i> Create Account
+                    </button>
+                </form>
+            </div>
+
+            <div class="signup-footer">
+                <p class="mb-0">
+                    Already have an account? <a href="{% url 'users:login' %}" class="text-primary">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add Bootstrap classes to form elements
+        const formControls = document.querySelectorAll('input, select, textarea');
+        formControls.forEach(function(element) {
+            if (element.type !== 'checkbox' && element.type !== 'radio') {
+                element.classList.add('form-control');
+            }
+        });
+    });
+</script>
+{% endblock %}

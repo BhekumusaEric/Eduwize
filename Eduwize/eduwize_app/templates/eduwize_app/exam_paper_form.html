@@ -1,0 +1,174 @@
+{% extends 'eduwize_app/base_generic.html' %}
+{% load static %}
+
+{% block title %}Eduwize | {% if form.instance.id %}Edit{% else %}Create{% endif %} Exam Paper{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">{% if form.instance.id %}Edit{% else %}Create{% endif %} Exam Paper</h1>
+    <a href="{% url 'eduwize_app:exam-papers-list' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+        <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Exam Papers
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Exam Paper Information</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.title.id_for_label }}">Title</label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="text-danger">{{ form.title.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.course.id_for_label }}">Course</label>
+                                {{ form.course }}
+                                {% if form.course.errors %}
+                                    <div class="text-danger">{{ form.course.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="{{ form.description.id_for_label }}">Description</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="{{ form.year.id_for_label }}">Year</label>
+                                {{ form.year }}
+                                {% if form.year.errors %}
+                                    <div class="text-danger">{{ form.year.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="{{ form.exam_type.id_for_label }}">Exam Type</label>
+                                {{ form.exam_type }}
+                                {% if form.exam_type.errors %}
+                                    <div class="text-danger">{{ form.exam_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="{{ form.level.id_for_label }}">Level</label>
+                                {{ form.level }}
+                                {% if form.level.errors %}
+                                    <div class="text-danger">{{ form.level.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.file.id_for_label }}">Exam Paper File (PDF)</label>
+                                {{ form.file }}
+                                {% if form.file.errors %}
+                                    <div class="text-danger">{{ form.file.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Upload a PDF file of the exam paper.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox mt-4">
+                                    {{ form.is_solution }}
+                                    <label class="custom-control-label" for="{{ form.is_solution.id_for_label }}">
+                                        This is a solution paper
+                                    </label>
+                                </div>
+                                {% if form.is_solution.errors %}
+                                    <div class="text-danger">{{ form.is_solution.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="{{ form.related_paper.id_for_label }}">Related Paper</label>
+                                {{ form.related_paper }}
+                                {% if form.related_paper.errors %}
+                                    <div class="text-danger">{{ form.related_paper.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">If this is a solution, select the related question paper.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save mr-1"></i> Save Exam Paper
+                        </button>
+                        <a href="{% url 'eduwize_app:exam-papers-list' %}" class="btn btn-secondary ml-2">
+                            <i class="fas fa-times mr-1"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add Bootstrap classes to form elements
+        const formControls = document.querySelectorAll('input, select, textarea');
+        formControls.forEach(function(element) {
+            if (element.type !== 'checkbox' && element.type !== 'radio') {
+                element.classList.add('form-control');
+            } else {
+                element.classList.add('custom-control-input');
+            }
+        });
+
+        // Show/hide related paper field based on is_solution checkbox
+        const isSolutionCheckbox = document.getElementById('{{ form.is_solution.id_for_label }}');
+        const relatedPaperField = document.getElementById('{{ form.related_paper.id_for_label }}').closest('.row');
+        
+        function toggleRelatedPaper() {
+            if (isSolutionCheckbox.checked) {
+                relatedPaperField.style.display = 'flex';
+            } else {
+                relatedPaperField.style.display = 'none';
+            }
+        }
+        
+        // Initial toggle
+        toggleRelatedPaper();
+        
+        // Toggle on change
+        isSolutionCheckbox.addEventListener('change', toggleRelatedPaper);
+    });
+</script>
+{% endblock %}

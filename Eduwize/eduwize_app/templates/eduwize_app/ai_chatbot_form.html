@@ -1,10 +1,401 @@
 {% extends 'eduwize_app/base_generic.html' %}
+{% load static %}
+
+{% block title %}Eduwize | AI Chatbot{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: 70vh;
+        display: flex;
+        flex-direction: column;
+        background-color: #f8f9fc;
+        border-radius: 0.35rem;
+        overflow: hidden;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+
+    .chat-header {
+        background-color: #4e73df;
+        color: white;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .chat-header h4 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .chat-header i {
+        margin-right: 0.5rem;
+        font-size: 1.25rem;
+    }
+
+    .chat-messages {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-message {
+        margin-bottom: 1rem;
+        max-width: 80%;
+        display: flex;
+    }
+
+    .user-message {
+        align-self: flex-end;
+    }
+
+    .ai-message {
+        align-self: flex-start;
+    }
+
+    .message-content {
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        position: relative;
+    }
+
+    .user-message .message-content {
+        background-color: #4e73df;
+        color: white;
+        border-bottom-right-radius: 0;
+    }
+
+    .ai-message .message-content {
+        background-color: #e3e6f0;
+        color: #5a5c69;
+        border-bottom-left-radius: 0;
+    }
+
+    .message-time {
+        display: block;
+        font-size: 0.7rem;
+        margin-top: 0.25rem;
+        opacity: 0.7;
+    }
+
+    .chat-input {
+        padding: 1rem;
+        background-color: white;
+        border-top: 1px solid #e3e6f0;
+    }
+
+    .chat-input form {
+        display: flex;
+    }
+
+    .chat-input input {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+        margin-right: 0.5rem;
+    }
+
+    .chat-input button {
+        background-color: #4e73df;
+        color: white;
+        border: none;
+        border-radius: 0.35rem;
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .chat-input button:hover {
+        background-color: #2e59d9;
+    }
+
+    .chat-suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .suggestion-chip {
+        background-color: #e3e6f0;
+        color: #5a5c69;
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .suggestion-chip:hover {
+        background-color: #d1d3e2;
+    }
+
+    .ai-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+        background-color: #1cc88a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-left: 0.5rem;
+        background-color: #4e73df;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-  <h2>Ask AI Chatbot</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Ask</button>
-  </form>
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">AI Learning Assistant</h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="chat-container">
+            <div class="chat-header">
+                <i class="fas fa-robot"></i>
+                <h4>Eduwize AI Assistant</h4>
+            </div>
+
+            <div class="chat-messages" id="chatbotMessages">
+                <!-- AI Welcome Message -->
+                <div class="chat-message ai-message">
+                    <div class="ai-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! I'm your Eduwize AI Learning Assistant. How can I help you today?</p>
+                        <span class="message-time">Just now</span>
+                    </div>
+                </div>
+
+                {% for message in previous_messages %}
+                    {% if message.is_user %}
+                        <div class="chat-message user-message">
+                            <div class="message-content">
+                                <p>{{ message.text }}</p>
+                                <span class="message-time">{{ message.timestamp }}</span>
+                            </div>
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="chat-message ai-message">
+                            <div class="ai-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <p>{{ message.text }}</p>
+                                <span class="message-time">{{ message.timestamp }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="chat-input">
+                <form id="chatbotForm" method="post">
+                    {% csrf_token %}
+                    <input type="text" id="chatbotInput" name="question" placeholder="Ask me anything about your courses, assignments, or study tips..." required>
+                    <button type="submit">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+
+                <div class="chat-suggestions">
+                    <div class="suggestion-chip" onclick="suggestQuestion('How do I prepare for my upcoming quiz?')">How do I prepare for my upcoming quiz?</div>
+                    <div class="suggestion-chip" onclick="suggestQuestion('Explain the concept of object-oriented programming')">Explain OOP concepts</div>
+                    <div class="suggestion-chip" onclick="suggestQuestion('What are some good study techniques?')">Study techniques</div>
+                    <div class="suggestion-chip" onclick="suggestQuestion('Help me create a study schedule')">Create study schedule</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">AI Assistant Features</h6>
+            </div>
+            <div class="card-body">
+                <div class="feature-item mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="feature-icon bg-primary text-white rounded-circle p-2 mr-3">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h5 class="mb-0">Course Assistance</h5>
+                    </div>
+                    <p class="text-gray-600">Get help understanding course materials, concepts, and assignments.</p>
+                </div>
+
+                <div class="feature-item mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="feature-icon bg-success text-white rounded-circle p-2 mr-3">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h5 class="mb-0">Study Planning</h5>
+                    </div>
+                    <p class="text-gray-600">Create personalized study schedules and get time management tips.</p>
+                </div>
+
+                <div class="feature-item mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="feature-icon bg-info text-white rounded-circle p-2 mr-3">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <h5 class="mb-0">Quiz Preparation</h5>
+                    </div>
+                    <p class="text-gray-600">Get practice questions and review materials for upcoming quizzes.</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="feature-icon bg-warning text-white rounded-circle p-2 mr-3">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h5 class="mb-0">Learning Recommendations</h5>
+                    </div>
+                    <p class="text-gray-600">Receive personalized resource recommendations based on your learning style.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to scroll chat to bottom
+    function scrollToBottom() {
+        const chatMessages = document.getElementById('chatbotMessages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Scroll to bottom on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        scrollToBottom();
+
+        // Handle form submission
+        const chatbotForm = document.getElementById('chatbotForm');
+        const chatbotInput = document.getElementById('chatbotInput');
+        const chatbotMessages = document.getElementById('chatbotMessages');
+
+        chatbotForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const message = chatbotInput.value.trim();
+            if (message) {
+                // Add user message
+                const userMessage = document.createElement('div');
+                userMessage.className = 'chat-message user-message';
+                userMessage.innerHTML = `
+                    <div class="message-content">
+                        <p>${message}</p>
+                        <span class="message-time">${new Date().toLocaleTimeString()}</span>
+                    </div>
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                `;
+                chatbotMessages.appendChild(userMessage);
+
+                // Clear input
+                chatbotInput.value = '';
+
+                // Scroll to bottom
+                scrollToBottom();
+
+                // Show typing indicator
+                const typingIndicator = document.createElement('div');
+                typingIndicator.className = 'chat-message ai-message typing-indicator';
+                typingIndicator.innerHTML = `
+                    <div class="ai-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Typing...</p>
+                    </div>
+                `;
+                chatbotMessages.appendChild(typingIndicator);
+                scrollToBottom();
+
+                // Submit the form data via AJAX
+                const formData = new FormData(chatbotForm);
+
+                fetch(chatbotForm.action || window.location.href, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Remove typing indicator
+                    chatbotMessages.removeChild(typingIndicator);
+
+                    // Add AI response
+                    const aiMessage = document.createElement('div');
+                    aiMessage.className = 'chat-message ai-message';
+                    aiMessage.innerHTML = `
+                        <div class="ai-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <p>${data.answer || 'I\'m processing your request. Please try again later.'}</p>
+                            <span class="message-time">${new Date().toLocaleTimeString()}</span>
+                        </div>
+                    `;
+                    chatbotMessages.appendChild(aiMessage);
+                    scrollToBottom();
+                })
+                .catch(error => {
+                    // Remove typing indicator
+                    chatbotMessages.removeChild(typingIndicator);
+
+                    // Add AI error response
+                    const aiMessage = document.createElement('div');
+                    aiMessage.className = 'chat-message ai-message';
+                    aiMessage.innerHTML = `
+                        <div class="ai-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <p>I'm currently having trouble processing your request. Let me simulate a response for now.</p>
+                            <p>Your question was about "${message}". This is an area I can help with! Would you like more specific information?</p>
+                            <span class="message-time">${new Date().toLocaleTimeString()}</span>
+                        </div>
+                    `;
+                    chatbotMessages.appendChild(aiMessage);
+                    scrollToBottom();
+                });
+            }
+        });
+    });
+
+    // Function to suggest a question
+    function suggestQuestion(question) {
+        document.getElementById('chatbotInput').value = question;
+        document.getElementById('chatbotInput').focus();
+    }
+</script>
 {% endblock %}

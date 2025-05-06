@@ -1,4 +1,612 @@
-<p>Username: {{ user.username }}</p>
-<p>Student ID: {{ user.student.student_id }}</p>
-<p>Level: {{ user.student.level }}</p>
-<p>Status: {{ user.student.status }}</p>
+{% extends 'eduwize_app/base_generic.html' %}
+{% load static %}
+
+{% block title %}Eduwize | My Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background-color: #fff;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-cover {
+        height: 200px;
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        position: relative;
+    }
+
+    .profile-avatar-container {
+        position: absolute;
+        bottom: -50px;
+        left: 50px;
+    }
+
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 5px solid #fff;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        object-fit: cover;
+    }
+
+    .profile-info {
+        padding: 70px 30px 30px;
+    }
+
+    .profile-name {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-id {
+        color: #858796;
+        margin-bottom: 1rem;
+    }
+
+    .profile-bio {
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        min-width: 100px;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #4e73df;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: #858796;
+        text-transform: uppercase;
+    }
+
+    .profile-actions {
+        margin-top: 1rem;
+    }
+
+    .profile-section {
+        margin-bottom: 2rem;
+    }
+
+    .profile-section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e3e6f0;
+    }
+
+    .course-progress-card {
+        transition: all 0.3s;
+    }
+
+    .course-progress-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .achievement-badge {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .badge-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: #f8f9fc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2rem;
+        color: #4e73df;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+
+    .badge-icon.gold {
+        color: #f6c23e;
+    }
+
+    .badge-icon.silver {
+        color: #858796;
+    }
+
+    .badge-icon.bronze {
+        color: #e74a3b;
+    }
+
+    .badge-name {
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .badge-description {
+        font-size: 0.8rem;
+        color: #858796;
+    }
+
+    .activity-timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .activity-timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 15px;
+        height: 100%;
+        width: 2px;
+        background-color: #e3e6f0;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+
+    .timeline-icon {
+        position: absolute;
+        left: -30px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #4e73df;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+    }
+
+    .timeline-content {
+        padding: 1rem;
+        background-color: #f8f9fc;
+        border-radius: 0.5rem;
+    }
+
+    .timeline-title {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .timeline-date {
+        font-size: 0.8rem;
+        color: #858796;
+    }
+
+    .study-plan-card {
+        margin-bottom: 1rem;
+    }
+
+    .plan-day {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .plan-tasks {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    .plan-task {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e3e6f0;
+        display: flex;
+        align-items: center;
+    }
+
+    .plan-task:last-child {
+        border-bottom: none;
+    }
+
+    .task-time {
+        min-width: 80px;
+        font-weight: 600;
+    }
+
+    .task-subject {
+        flex-grow: 1;
+    }
+
+    .task-status {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-left: 1rem;
+    }
+
+    .status-completed {
+        background-color: #1cc88a;
+    }
+
+    .status-pending {
+        background-color: #f6c23e;
+    }
+
+    .status-upcoming {
+        background-color: #e3e6f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">My Profile</h1>
+    <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+        <i class="fas fa-download fa-sm text-white-50"></i> Download Transcript
+    </a>
+</div>
+
+<!-- Profile Header -->
+<div class="profile-header">
+    <div class="profile-cover"></div>
+    <div class="profile-avatar-container">
+        {% if student.profile_picture %}
+            <img src="{{ student.profile_picture.url }}" alt="{{ user.username }}" class="profile-avatar">
+        {% else %}
+            <img src="{% static 'eduwize_app/images/default-profile.png' %}" alt="{{ user.username }}" class="profile-avatar">
+        {% endif %}
+    </div>
+    <div class="profile-info">
+        <h2 class="profile-name">{{ user.first_name }} {{ user.last_name }}</h2>
+        <div class="profile-id">
+            <span class="badge bg-primary">{{ student.get_level_display }}</span>
+            <span class="ml-2">Student ID: {{ student.student_id }}</span>
+        </div>
+
+        <p class="profile-bio">
+            {% if student.bio %}
+                {{ student.bio }}
+            {% else %}
+                No bio available. <a href="#" data-bs-toggle="modal" data-bs-target="#editProfileModal">Add one now</a>
+            {% endif %}
+        </p>
+
+        <div class="profile-stats">
+            <div class="stat-item">
+                <div class="stat-value">{{ student.courses_enrolled.count }}</div>
+                <div class="stat-label">Courses</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ completed_courses|default:"0" }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ avg_score|default:"0" }}%</div>
+                <div class="stat-label">Avg. Score</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ student.status|title }}</div>
+                <div class="stat-label">Status</div>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                <i class="fas fa-edit mr-1"></i> Edit Profile
+            </button>
+            <button class="btn btn-outline-primary ml-2">
+                <i class="fas fa-cog mr-1"></i> Settings
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column -->
+    <div class="col-lg-8">
+        <!-- Course Progress -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">My Courses</h6>
+                <div class="dropdown no-arrow">
+                    <a class="dropdown-toggle" href="#" role="button" id="coursesDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="coursesDropdown">
+                        <div class="dropdown-header">View Options:</div>
+                        <a class="dropdown-item" href="#">All Courses</a>
+                        <a class="dropdown-item" href="#">In Progress</a>
+                        <a class="dropdown-item" href="#">Completed</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for enrollment in student.enrollment_set.all %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 course-progress-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ enrollment.course.name }}</h5>
+                                    <p class="card-text text-muted">{{ enrollment.course.description|truncatechars:80 }}</p>
+
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">75% Complete</small>
+                                        <small class="text-muted">Enrolled: {{ enrollment.enrolled_at|date:"M d, Y" }}</small>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <a href="{% url 'eduwize_app:course-detail' enrollment.course.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-play-circle mr-1"></i> Continue
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-outline-primary ml-2">
+                                        <i class="fas fa-chart-line mr-1"></i> Progress
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-graduation-cap fa-3x text-gray-300 mb-3"></i>
+                            <p>You are not enrolled in any courses yet.</p>
+                            <a href="{% url 'eduwize_app:course-list' %}" class="btn btn-primary mt-2">Browse Courses</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Study Plan -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">My Study Plan</h6>
+            </div>
+            <div class="card-body">
+                <div class="study-plan-card">
+                    <div class="plan-day">Today</div>
+                    <ul class="plan-tasks">
+                        <li class="plan-task">
+                            <div class="task-time">09:00 AM</div>
+                            <div class="task-subject">Python Programming - Chapter 5</div>
+                            <div class="task-status status-completed"></div>
+                        </li>
+                        <li class="plan-task">
+                            <div class="task-time">11:00 AM</div>
+                            <div class="task-subject">Database Design Quiz</div>
+                            <div class="task-status status-completed"></div>
+                        </li>
+                        <li class="plan-task">
+                            <div class="task-time">02:00 PM</div>
+                            <div class="task-subject">Web Development Project</div>
+                            <div class="task-status status-pending"></div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="study-plan-card">
+                    <div class="plan-day">Tomorrow</div>
+                    <ul class="plan-tasks">
+                        <li class="plan-task">
+                            <div class="task-time">10:00 AM</div>
+                            <div class="task-subject">Data Structures - Linked Lists</div>
+                            <div class="task-status status-upcoming"></div>
+                        </li>
+                        <li class="plan-task">
+                            <div class="task-time">01:00 PM</div>
+                            <div class="task-subject">Algorithm Analysis</div>
+                            <div class="task-status status-upcoming"></div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-calendar-alt mr-1"></i> View Full Schedule
+                    </a>
+                    <a href="#" class="btn btn-outline-primary ml-2">
+                        <i class="fas fa-edit mr-1"></i> Edit Plan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-lg-4">
+        <!-- Achievements -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Achievements</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="achievement-badge">
+                            <div class="badge-icon gold">
+                                <i class="fas fa-award"></i>
+                            </div>
+                            <div class="badge-name">Fast Learner</div>
+                            <div class="badge-description">Completed 5 courses in record time</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="achievement-badge">
+                            <div class="badge-icon silver">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="badge-name">Quiz Master</div>
+                            <div class="badge-description">Scored 90%+ on 10 quizzes</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="achievement-badge">
+                            <div class="badge-icon bronze">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="badge-name">Bookworm</div>
+                            <div class="badge-description">Accessed 50+ study materials</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="achievement-badge">
+                            <div class="badge-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="badge-name">Dedicated</div>
+                            <div class="badge-description">Studied for 100+ hours</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a href="#" class="btn btn-sm btn-primary">View All Achievements</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+            </div>
+            <div class="card-body">
+                <div class="activity-timeline">
+                    {% for activity in student.activitylog_set.all|slice:":5" %}
+                        <div class="timeline-item">
+                            <div class="timeline-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">{{ activity.activity }}</div>
+                                <div class="timeline-date">{{ activity.created_at|timesince }} ago</div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-history fa-3x text-gray-300 mb-3"></i>
+                            <p>No recent activity to display.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Recommendations -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Personalized Recommendations</h6>
+            </div>
+            <div class="card-body">
+                <div class="recommendation-item mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="bg-primary text-white rounded-circle p-2 mr-3">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h6 class="mb-0">Focus on Data Structures</h6>
+                    </div>
+                    <p class="text-muted small">Based on your quiz performance, we recommend focusing more on linked lists and trees.</p>
+                </div>
+
+                <div class="recommendation-item">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="bg-success text-white rounded-circle p-2 mr-3">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h6 class="mb-0">Recommended Reading</h6>
+                    </div>
+                    <p class="text-muted small">Check out "Clean Code" by Robert C. Martin to improve your programming skills.</p>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a href="{% url 'eduwize_app:ai-recommendations' %}" class="btn btn-sm btn-primary">View All Recommendations</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="firstName" value="{{ user.first_name }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" value="{{ user.last_name }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" value="{{ user.email }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">Bio</label>
+                        <textarea class="form-control" id="bio" rows="3">{{ student.bio }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="profilePicture" class="form-label">Profile Picture</label>
+                        <input class="form-control" type="file" id="profilePicture">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" id="dateOfBirth" value="{{ student.date_of_birth|date:'Y-m-d' }}">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate progress bars
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(function(bar) {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+
+            setTimeout(function() {
+                bar.style.width = width;
+            }, 300);
+        });
+    });
+</script>
+{% endblock %}
