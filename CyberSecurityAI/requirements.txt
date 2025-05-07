@@ -1,0 +1,5 @@
+tensorflow
+transformers
+flask
+flask_cors
+python-dotenv

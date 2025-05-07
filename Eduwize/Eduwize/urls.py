@@ -22,7 +22,8 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('eduwize_app.urls', namespace='eduwize_app')),
-    path('users/', include('users.urls', namespace='users'))
+    path('users/', include('users.urls', namespace='users')),
+    path('fun_zone/', include('fun_zone.urls', namespace='fun_zone')),
 ]
 
 # Serve static files in development

@@ -9,6 +9,7 @@ from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, View, TemplateView
 from django.utils.decorators import method_decorator
 from .models import Student, Course, Enrollment, StudyMaterial, Quiz, Question, PerformanceAnalysis, Notification, Feedback, AIChatbot, AIRecommendation, Tags, ActivityLog, StudentFile, ExamPaper, StudyLevelChoices
+import google.generativeai as genai
 import uuid
 import json
 import datetime
@@ -163,11 +164,19 @@ class EnrollmentDetailView(DetailView):
     template_name = 'eduwize_app/enrollment_detail.html'
     context_object_name = 'enrollment'
 
+from django.urls import reverse
+
 class EnrollmentCreateView(CreateView):
     model = Enrollment
     template_name = 'eduwize_app/enrollment_form.html'
-    fields = ['student', 'course']
-    success_url = reverse_lazy('eduwize_app:enrollment-list')
+    fields = ['course']  # Remove 'student' field
+
+    def form_valid(self, form):
+        # Automatically assign the current user as the student
+        form.instance.student = self.request.user.student
+        enrollment = form.save()
+        course_id = enrollment.course.pk
+        return redirect(reverse('eduwize_app:course-detail', kwargs={'pk': course_id}))
 
 class EnrollmentUpdateView(UpdateView):
     model = Enrollment
@@ -300,6 +309,36 @@ class FeedbackFormView(CreateView):
 class AIChatbotView(View):
     template_name = 'eduwize_app/ai_chatbot_form.html'
 
+    # Knowledge base for NCV curriculum
+    knowledge_base = {
+        "Mathematics": {
+            "NQF Level 2": "Basic arithmetic, algebra, and geometry.",
+            "NQF Level 3": "Intermediate algebra, trigonometry, and statistics.",
+            "NQF Level 4": "Advanced algebra, calculus, and probability."
+        },
+        "English": {
+            "NQF Level 2": "Basic reading, writing, and communication skills.",
+            "NQF Level 3": "Intermediate reading, writing, and communication skills.",
+            "NQF Level 4": "Advanced reading, writing, and communication skills."
+        },
+        "Life Orientation": {
+            "NQF Level 2": "Basic life skills, personal development, and career guidance.",
+            "NQF Level 3": "Intermediate life skills, personal development, and career guidance.",
+            "NQF Level 4": "Advanced life skills, personal development, and career guidance."
+        }
+    }
+    # Add more subjects and topics to the knowledge base
+    knowledge_base["Electrical Engineering"] = {
+        "NQF Level 2": "Basic electrical circuits, components, and safety.",
+        "NQF Level 3": "Intermediate electrical circuits, digital electronics, and programming.",
+        "NQF Level 4": "Advanced electrical circuits, power systems, and control systems."
+    }
+    knowledge_base["Mechanical Engineering"] = {
+        "NQF Level 2": "Basic mechanical principles, tools, and safety.",
+        "NQF Level 3": "Intermediate mechanical principles, manufacturing processes, and CAD.",
+        "NQF Level 4": "Advanced mechanical principles, thermodynamics, and machine design."
+    }
+
     def get(self, request):
         # Get previous chat messages for this user
         previous_messages = []
@@ -338,31 +377,30 @@ class AIChatbotView(View):
 
         if not question:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({'error': 'Question is required'}, status=400)
+                return JsonResponse({'success': False, 'error': 'Question is required'}, status=400)
             return redirect('eduwize_app:ai-chatbot')
 
         # Generate an answer (in a real app, this would call an AI service)
         answer = self.generate_answer(question)
-
         # Save the chat message
-        if request.user.is_authenticated:
-            try:
-                chat = AIChatbot.objects.create(
-                    student=request.user.student,
-                    question=question,
-                    answer=answer
-                )
-            except:
-                # If user doesn't have a student profile, just create the chat without student
-                chat = AIChatbot.objects.create(
-                    question=question,
-                    answer=answer
-                )
-        else:
-            chat = AIChatbot.objects.create(
-                question=question,
-                answer=answer
-            )
+        # if request.user.is_authenticated:
+        #     try:
+        #         chat = AIChatbot.objects.create(
+        #             student=request.user.student,
+        #             question=question,
+        #             answer=answer
+        #         )
+        #     except:
+        #         # If user doesn't have a student profile, just create the chat without student
+        #         chat = AIChatbot.objects.create(
+        #             question=question,
+            #answer=answer
+        #         )
+        # else:
+        #     chat = AIChatbot.objects.create(
+        #         question=question,
+        #         answer=answer
+        #     )
 
         # If this is an AJAX request, return JSON response
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -380,29 +418,23 @@ class AIChatbotView(View):
         Generate an answer based on the question.
         In a real app, this would call an AI service or API.
         """
-        # Simple keyword-based responses for demonstration
-        question_lower = question.lower()
+        return "This is a test response."
+        model = genai.GenerativeModel('gemini-pro')
+        # Access knowledge base
+        context = ""
+        for subject, levels in self.knowledge_base.items():
+            if subject.lower() in question.lower():
+                context += f"Information about {subject}:\n"
+                for level, description in levels.items():
+                    if level.lower() in question.lower():
+                        context += f"- {level}: {description}\n"
 
-        if 'hello' in question_lower or 'hi' in question_lower:
-            return "Hello! How can I help you with your studies today?"
-
-        elif 'quiz' in question_lower or 'test' in question_lower or 'exam' in question_lower:
-            return "To prepare for your quiz, I recommend reviewing your notes, creating flashcards for key concepts, and taking practice tests. Would you like me to help you create a study plan?"
-
-        elif 'study' in question_lower or 'learn' in question_lower:
-            return "Effective study techniques include active recall, spaced repetition, and the Pomodoro technique (25 minutes of focused study followed by a 5-minute break). Would you like more details on any of these methods?"
-
-        elif 'schedule' in question_lower or 'plan' in question_lower:
-            return "I can help you create a study schedule. Consider allocating time based on subject difficulty, upcoming deadlines, and your personal energy levels throughout the day. Would you like me to suggest a template?"
-
-        elif 'programming' in question_lower or 'code' in question_lower or 'python' in question_lower:
-            return "Programming is best learned through practice. I recommend working on small projects, using resources like Codecademy, and joining coding communities. For Python specifically, try solving problems on platforms like LeetCode or HackerRank."
-
-        elif 'object' in question_lower and ('oriented' in question_lower or 'oop' in question_lower):
-            return "Object-Oriented Programming (OOP) is a programming paradigm based on 'objects' containing data and methods. The four main principles are: Encapsulation, Abstraction, Inheritance, and Polymorphism. Would you like me to explain any of these concepts in more detail?"
-
-        else:
-            return "That's an interesting question about '" + question + "'. I'm still learning, but I'd be happy to help you explore this topic further. Could you provide more specific details about what you'd like to know?"
+        prompt = f"You are a helpful AI assistant for NCV students studying at Eduwize. Answer the following question about the NCV curriculum: {question}. Use the following information to provide a more detailed and accurate answer: {context}. Provide detailed and accurate information, and explain complex concepts in a clear and concise manner. If the question is about an assignment or tutorial, provide a step-by-step solution and relevant examples."
+        try:
+            response = model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            return f"An error occurred: {e}"
 
 
 # AI Recommendation Views
@@ -433,10 +465,16 @@ class HomePageView(ListView):
     context_object_name = 'courses'
     paginate_by = 10
     ordering = ['-created_at']
-    queryset = Course.objects.all()
+    # queryset = Course.objects.all() # Fetch all courses - handled by get_queryset
     allow_empty = True
     extra_context = {'title': 'Home Page'}
     success_url = reverse_lazy('eduwize_app:home')
+
+    def get_queryset(self):
+        """
+        Override the default queryset to order by creation date.
+        """
+        return Course.objects.all().order_by('-created_at')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

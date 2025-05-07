@@ -213,7 +213,7 @@
             </div>
 
             <div class="chat-input">
-                <form id="chatbotForm" method="post">
+                <form id="chatbotForm" method="post" action="{% url 'eduwize_app:ai-chatbot' %}">
                     {% csrf_token %}
                     <input type="text" id="chatbotInput" name="question" placeholder="Ask me anything about your courses, assignments, or study tips..." required>
                     <button type="submit">
@@ -299,7 +299,7 @@
         const chatbotInput = document.getElementById('chatbotInput');
         const chatbotMessages = document.getElementById('chatbotMessages');
 
-        chatbotForm.addEventListener('submit', function(e) {
+        //chatbotForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
             const message = chatbotInput.value.trim();

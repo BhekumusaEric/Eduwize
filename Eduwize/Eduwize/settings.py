@@ -26,6 +26,8 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-y@x+)t2^g8vvjt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
+GEMINI_API_KEY = 'AIzaSyB5XY_a8D7lz48n10uo64Qstl0WQdWzIDc'
+
 ALLOWED_HOSTS = ['eduwize.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
@@ -41,6 +43,7 @@ INSTALLED_APPS = [
     #'rest_framework',
     'eduwize_app',
     'users',
+    'fun_zone',
 ]
 
 MIDDLEWARE = [

@@ -137,3 +137,16 @@ class ExamPaperForm(forms.ModelForm):
             'file': forms.ClearableFileInput(),
             'year': forms.NumberInput(attrs={'min': 2000, 'max': 2100}),
         }
+
+class RegistrationForm(UserCreationForm):
+    profile_picture = forms.ImageField(required=False)
+    bio = forms.CharField(max_length=500, required=False, widget=forms.Textarea(attrs={'rows': 3}))
+    date_of_birth = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = UserCreationForm.Meta.fields + ('email',)
+        widgets = {
+            'password1': forms.PasswordInput(),
+            'password2': forms.PasswordInput(),
+        }

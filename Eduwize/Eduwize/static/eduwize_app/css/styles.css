@@ -49,8 +49,8 @@ a:hover {
   background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
   color: white;
   transition: all 0.3s;
-  position: fixed;
-  height: 100vh;
+  position: sticky;
+  top: 0;
   z-index: 999;
 }
 
@@ -107,7 +107,8 @@ a:hover {
 .content {
   width: 100%;
   padding: 1.5rem;
-  margin-left: 250px;
+  margin-left: auto;
+  margin-right: auto;
   transition: all 0.3s;
 }
 
@@ -321,6 +322,14 @@ label {
 
 /* Responsive */
 @media (max-width: 768px) {
+  body {
+    font-size: 0.9rem;
+  }
+
+  .content {
+    padding: 1rem;
+  }
+
   .sidebar {
     margin-left: -250px;
   }
@@ -340,4 +349,24 @@ label {
   #sidebarCollapse span {
     display: none;
   }
+}
+
+/* Course Card Styles */
+.course-card {
+  transition: transform 0.3s ease-in-out;
+}
+
+.course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.course-thumbnail {
+  height: 160px;
+  object-fit: cover;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.course-thumbnail:hover {
+  opacity: 0.8;
 }

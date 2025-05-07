@@ -1,0 +1,6 @@
+<h1>Hackathons</h1>
+<ul>
+    {% for hackathon in hackathons %}
+    <li>{{ hackathon.title }} - {{ hackathon.location }}</li>
+    {% endfor %}
+</ul>
