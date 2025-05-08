@@ -1,0 +1,368 @@
+{% extends 'eduwize_app/dark_theme_base.html' %}
+{% load static %}
+
+{% block title %}Eduwize | Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notification-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .notification-card.unread {
+        border-left-color: var(--primary);
+        background-color: rgba(78, 115, 223, 0.1);
+    }
+
+    .notification-card.read {
+        border-left-color: var(--secondary);
+        opacity: 0.8;
+    }
+
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(78, 115, 223, 0.2);
+        color: var(--primary);
+    }
+
+    .notification-time {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    .notification-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .notification-filter {
+        margin-bottom: 1.5rem;
+    }
+
+    .notification-filter .btn-group .btn {
+        border-color: var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .notification-filter .btn-group .btn.active {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        color: var(--secondary);
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Notifications</h1>
+    <div>
+        <form method="post" action="{% url 'eduwize_app:notifications-list' %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" name="mark_all_read" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <i class="fas fa-check-double fa-sm text-white-50 me-1"></i> Mark All as Read
+            </button>
+        </form>
+        <a href="{% url 'eduwize_app:settings' %}" class="d-none d-sm-inline-block btn btn-sm btn-outline-primary shadow-sm ms-2">
+            <i class="fas fa-cog fa-sm text-primary-50 me-1"></i> Notification Settings
+        </a>
+    </div>
+</div>
+
+<!-- Notification Filter -->
+<div class="card shadow mb-4">
+    <div class="card-body notification-filter">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="btn-group" role="group" aria-label="Notification filters">
+                <button type="button" class="btn btn-sm active" data-filter="all">All</button>
+                <button type="button" class="btn btn-sm" data-filter="unread">Unread</button>
+                <button type="button" class="btn btn-sm" data-filter="course">Courses</button>
+                <button type="button" class="btn btn-sm" data-filter="quiz">Quizzes</button>
+                <button type="button" class="btn btn-sm" data-filter="system">System</button>
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Sort by: Newest
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="sortDropdown">
+                    <li><a class="dropdown-item active" href="#">Newest</a></li>
+                    <li><a class="dropdown-item" href="#">Oldest</a></li>
+                    <li><a class="dropdown-item" href="#">Priority</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notifications List -->
+<div class="notifications-container">
+    {% if notifications %}
+        {% for notification in notifications %}
+            <div class="card notification-card {% if notification.is_read %}read{% else %}unread{% endif %}" data-type="{{ notification.notification_type }}">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="notification-icon me-3">
+                            <i class="fas {% if notification.notification_type == 'course' %}fa-book{% elif notification.notification_type == 'quiz' %}fa-question-circle{% elif notification.notification_type == 'system' %}fa-bell{% else %}fa-info-circle{% endif %}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="card-title">{{ notification.title }}</h5>
+                            <p class="card-text">{{ notification.message }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="notification-time">{{ notification.created_at|timesince }} ago</span>
+                                <div class="notification-actions">
+                                    {% if notification.link %}
+                                        <a href="{{ notification.link }}" class="btn btn-sm btn-primary">View</a>
+                                    {% endif %}
+                                    <button class="btn btn-sm btn-outline-secondary mark-read-btn" data-id="{{ notification.id }}">
+                                        {% if notification.is_read %}
+                                            Mark as Unread
+                                        {% else %}
+                                            Mark as Read
+                                        {% endif %}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="card shadow">
+            <div class="card-body empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-bell-slash"></i>
+                </div>
+                <h4>No Notifications</h4>
+                <p class="text-muted">You don't have any notifications at the moment.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if notifications.has_other_pages %}
+<nav aria-label="Notification pagination">
+    <ul class="pagination justify-content-center">
+        {% if notifications.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ notifications.previous_page_number }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" href="#" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        {% endif %}
+
+        {% for i in notifications.paginator.page_range %}
+            {% if notifications.number == i %}
+                <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if notifications.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ notifications.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" href="#" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter buttons
+        const filterButtons = document.querySelectorAll('[data-filter]');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+
+                const filter = this.getAttribute('data-filter');
+                const notifications = document.querySelectorAll('.notification-card');
+
+                notifications.forEach(notification => {
+                    if (filter === 'all') {
+                        notification.style.display = 'block';
+                    } else if (filter === 'unread') {
+                        notification.style.display = notification.classList.contains('unread') ? 'block' : 'none';
+                    } else {
+                        notification.style.display = notification.getAttribute('data-type') === filter ? 'block' : 'none';
+                    }
+                });
+            });
+        });
+
+        // Mark as read/unread buttons
+        const markReadButtons = document.querySelectorAll('.mark-read-btn');
+        markReadButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const notificationId = this.getAttribute('data-id');
+                const notificationCard = this.closest('.notification-card');
+
+                // Toggle read/unread state
+                if (notificationCard.classList.contains('unread')) {
+                    notificationCard.classList.remove('unread');
+                    notificationCard.classList.add('read');
+                    this.textContent = 'Mark as Unread';
+
+                    // Send AJAX request to mark as read
+                    markNotificationAsRead(notificationId);
+                } else {
+                    notificationCard.classList.remove('read');
+                    notificationCard.classList.add('unread');
+                    this.textContent = 'Mark as Read';
+
+                    // Send AJAX request to mark as unread
+                    markNotificationAsUnread(notificationId);
+                }
+            });
+        });
+
+        // Mark all as read button
+        const markAllReadBtn = document.getElementById('markAllReadBtn');
+        if (markAllReadBtn) {
+            markAllReadBtn.addEventListener('click', function() {
+                const unreadNotifications = document.querySelectorAll('.notification-card.unread');
+
+                unreadNotifications.forEach(notification => {
+                    notification.classList.remove('unread');
+                    notification.classList.add('read');
+
+                    const markReadBtn = notification.querySelector('.mark-read-btn');
+                    if (markReadBtn) {
+                        markReadBtn.textContent = 'Mark as Unread';
+                    }
+                });
+
+                // Send AJAX request to mark all as read
+                markAllNotificationsAsRead();
+            });
+        }
+
+        // AJAX functions
+        function markNotificationAsRead(notificationId) {
+            fetch(`/api/notifications/${notificationId}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                updateNotificationCount();
+            })
+            .catch(error => {
+                console.error('Error marking notification as read:', error);
+            });
+        }
+
+        function markNotificationAsUnread(notificationId) {
+            fetch(`/api/notifications/${notificationId}/mark-unread/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                updateNotificationCount();
+            })
+            .catch(error => {
+                console.error('Error marking notification as unread:', error);
+            });
+        }
+
+        function markAllNotificationsAsRead() {
+            fetch('/api/notifications/mark-all-read/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                updateNotificationCount();
+            })
+            .catch(error => {
+                console.error('Error marking all notifications as read:', error);
+            });
+        }
+
+        function updateNotificationCount() {
+            const notificationCount = document.getElementById('notificationCount');
+            const unreadCount = document.querySelectorAll('.notification-card.unread').length;
+
+            if (notificationCount) {
+                if (unreadCount > 0) {
+                    notificationCount.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                    notificationCount.style.display = 'inline-block';
+                } else {
+                    notificationCount.style.display = 'none';
+                }
+            }
+        }
+
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Eduwize - AI-Powered Learning Platform for College Students">
+    <title>{% block title %}Eduwize | Learning Platform{% endblock %}</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Eduwize">
+    <meta name="application-name" content="Eduwize">
+    <meta name="msapplication-TileColor" content="#1a1a2e">
+
+    <!-- PWA Icons -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'eduwize_app/images/icons/icon-192x192.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'eduwize_app/images/icons/apple-icon-180x180.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'eduwize_app/images/icons/apple-icon-152x152.png' %}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'eduwize_app/images/icons/apple-icon-120x120.png' %}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'eduwize_app/images/icons/apple-icon-76x76.png' %}">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary: #4e73df;
+            --primary-dark: #224abe;
+            --primary-light: #6f8df7;
+            --primary-medium: #1a1a2e;
+            --secondary: #858796;
+            --success: #1cc88a;
+            --info: #36b9cc;
+            --warning: #f6c23e;
+            --danger: #e74a3b;
+            --light: #f8f9fc;
+            --dark: #0f0f1a;
+            --darker: #070711;
+            --border-color: #2a2a3c;
+            --text-primary: #e6e6e6;
+            --text-secondary: #b3b3b3;
+        }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--dark);
+            color: var(--text-primary);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            min-width: 250px;
+            max-width: 250px;
+            background: var(--primary-medium);
+            color: white;
+            transition: all 0.3s;
+            position: fixed;
+            height: 100vh;
+            z-index: 999;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .sidebar .sidebar-brand {
+            height: 4.375rem;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 800;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            letter-spacing: 0.05rem;
+            z-index: 1;
+            color: var(--text-primary);
+        }
+
+        .sidebar hr {
+            margin: 0 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .sidebar .nav-item {
+            position: relative;
+        }
+
+        .sidebar .nav-item .nav-link {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .sidebar .nav-item .nav-link:hover {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .nav-item .nav-link i {
+            margin-right: 0.25rem;
+        }
+
+        .sidebar .nav-item.active .nav-link {
+            font-weight: 700;
+            background-color: rgba(78, 115, 223, 0.2);
+        }
+
+        .sidebar-heading {
+            padding: 0 1rem;
+            font-weight: 800;
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            margin-top: 1rem;
+        }
+
+        /* Content */
+        .content {
+            width: 100%;
+            padding: 1.5rem;
+            margin-left: 250px;
+            transition: all 0.3s;
+            min-height: 100vh;
+        }
+        
+        /* Cards */
+        .card {
+            background-color: var(--primary-medium);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.2);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.25rem;
+        }
+        
+        .card-body {
+            padding: 1.25rem;
+        }
+        
+        .card-footer {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid var(--border-color);
+            padding: 0.75rem 1.25rem;
+        }
+        
+        /* Forms */
+        .form-control, .form-select {
+            background-color: var(--darker);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: var(--darker);
+            border-color: var(--primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Topbar */
+        .topbar {
+            background-color: var(--primary-medium);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        /* Footer */
+        .footer {
+            background-color: var(--primary-medium);
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem 0;
+            color: var(--text-secondary);
+        }
+        
+        /* Tables */
+        .table {
+            color: var(--text-primary);
+        }
+        
+        .table thead th {
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .table td, .table th {
+            border-top: 1px solid var(--border-color);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                margin-left: -250px;
+            }
+
+            .sidebar.active {
+                margin-left: 0;
+            }
+
+            .content {
+                margin-left: 0;
+            }
+
+            .content.active {
+                margin-left: 250px;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-brand d-flex align-items-center justify-content-center">
+                <div class="sidebar-brand-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="sidebar-brand-text mx-3">Eduwize</div>
+            </div>
+
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">
+                Core
+            </div>
+
+            <ul class="nav flex-column">
+                <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:home' %}">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <hr class="sidebar-divider">
+
+                <div class="sidebar-heading">
+                    Learning
+                </div>
+
+                <li class="nav-item {% if 'course' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:course-list' %}">
+                        <i class="fas fa-fw fa-book"></i>
+                        <span>Courses</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {% if 'quiz' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:quiz-list' %}">
+                        <i class="fas fa-fw fa-question-circle"></i>
+                        <span>Quizzes</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {% if 'exam-papers' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:exam-papers-list' %}">
+                        <i class="fas fa-fw fa-file-alt"></i>
+                        <span>Past Exam Papers</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {% if 'performance' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:performance-list' %}">
+                        <i class="fas fa-fw fa-chart-line"></i>
+                        <span>Performance</span>
+                    </a>
+                </li>
+
+                <hr class="sidebar-divider">
+
+                <div class="sidebar-heading">
+                    Community
+                </div>
+
+                <li class="nav-item {% if 'student' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:student-list' %}">
+                        <i class="fas fa-fw fa-users"></i>
+                        <span>Students</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {% if 'feedback' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:feedback' %}">
+                        <i class="fas fa-fw fa-comment"></i>
+                        <span>Feedback</span>
+                    </a>
+                </li>
+
+                <hr class="sidebar-divider">
+
+                <div class="sidebar-heading">
+                    Study Tools
+                </div>
+
+                <li class="nav-item {% if 'study-planner' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:study-planner' %}">
+                        <i class="fas fa-fw fa-calendar-alt"></i>
+                        <span>Study Planner</span>
+                    </a>
+                </li>
+
+                <div class="sidebar-heading">
+                    AI Tools
+                </div>
+
+                <li class="nav-item {% if 'ai-chatbot' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:ai-chatbot' %}">
+                        <i class="fas fa-fw fa-robot"></i>
+                        <span>AI Chatbot</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {% if 'ai-recommendations' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:ai-recommendations' %}">
+                        <i class="fas fa-fw fa-lightbulb"></i>
+                        <span>Recommendations</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {% if 'cyber-security-ai' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:cyber-security-ai' %}">
+                        <i class="fas fa-fw fa-shield-alt"></i>
+                        <span>Cyber Security AI</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {% if 'assignment-help-ai' in request.resolver_match.url_name %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'eduwize_app:assignment-help-ai' %}">
+                        <i class="fas fa-fw fa-graduation-cap"></i>
+                        <span>Assignment Help</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Topbar -->
+            <nav class="navbar navbar-expand navbar-dark bg-dark topbar mb-4 static-top shadow">
+                <!-- Sidebar Toggle (Topbar) -->
+                <button id="sidebarToggle" class="btn btn-link d-md-none rounded-circle me-3">
+                    <i class="fa fa-bars"></i>
+                </button>
+
+                <!-- Search Form -->
+                <form class="d-none d-sm-inline-block form-inline me-auto ms-md-3 my-2 my-md-0 mw-100 navbar-search">
+                    <div class="input-group">
+                        <input type="text" class="form-control bg-dark border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">
+                                <i class="fas fa-search fa-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Topbar Navbar -->
+                <ul class="navbar-nav ms-auto">
+                    <!-- Nav Item - Notifications -->
+                    <li class="nav-item dropdown no-arrow mx-1">
+                        <a class="nav-link dropdown-toggle" href="{% url 'eduwize_app:notifications-list' %}" id="alertsDropdown">
+                            <i class="fas fa-bell fa-fw"></i>
+                            <!-- Counter - Alerts -->
+                            <span class="badge bg-danger badge-counter" id="notificationCount">3+</span>
+                        </a>
+                    </li>
+
+                    <div class="topbar-divider d-none d-sm-block"></div>
+
+                    <!-- Nav Item - User Information -->
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="me-2 d-none d-lg-inline text-gray-400 small">
+                                {% if user.is_authenticated %}
+                                    {{ user.username }}
+                                {% else %}
+                                    Guest
+                                {% endif %}
+                            </span>
+                            {% if user.is_authenticated and user.student.profile_picture %}
+                                <img class="img-profile rounded-circle" src="{{ user.student.profile_picture.url }}" width="32" height="32">
+                            {% else %}
+                                <img class="img-profile rounded-circle" src="{% static 'eduwize_app/images/default-profile.png' %}" width="32" height="32">
+                            {% endif %}
+                        </a>
+                        <!-- Dropdown - User Information -->
+                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-dark shadow animated--grow-in" aria-labelledby="userDropdown">
+                            {% if user.is_authenticated %}
+                                <a class="dropdown-item" href="{% url 'eduwize_app:profile' %}">
+                                    <i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>
+                                    Profile
+                                </a>
+                                <a class="dropdown-item" href="{% url 'eduwize_app:settings' %}">
+                                    <i class="fas fa-cog fa-sm fa-fw me-2 text-gray-400"></i>
+                                    Settings
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{% url 'users:logout' %}">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
+                                    Logout
+                                </a>
+                            {% else %}
+                                <a class="dropdown-item" href="{% url 'users:login' %}">
+                                    <i class="fas fa-sign-in-alt fa-sm fa-fw me-2 text-gray-400"></i>
+                                    Login
+                                </a>
+                                <a class="dropdown-item" href="{% url 'users:signup' %}">
+                                    <i class="fas fa-user-plus fa-sm fa-fw me-2 text-gray-400"></i>
+                                    Register
+                                </a>
+                            {% endif %}
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <div class="container-fluid">
+                <!-- Messages -->
+                {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% elif message.tags == 'info' %}fa-info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}
+                {% endblock %}
+            </div>
+
+            <!-- Footer -->
+            <footer class="footer mt-auto py-3">
+                <div class="container">
+                    <div class="text-center">
+                        <span>&copy; 2024 Eduwize - AI-Powered Learning Platform</span>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Toggle sidebar
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.content').classList.toggle('active');
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

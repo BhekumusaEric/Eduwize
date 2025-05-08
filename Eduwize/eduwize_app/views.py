@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.dispatch import receiver
@@ -9,7 +10,6 @@ from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, View, TemplateView
 from django.utils.decorators import method_decorator
 from .models import Student, Course, Enrollment, StudyMaterial, Quiz, Question, PerformanceAnalysis, Notification, Feedback, AIChatbot, AIRecommendation, Tags, ActivityLog, StudentFile, ExamPaper, StudyLevelChoices
-import google.generativeai as genai
 import uuid
 import json
 import datetime
@@ -20,7 +20,8 @@ from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
 from django.db import connections
 from django.db.utils import OperationalError
 from django.views.decorators.cache import never_cache
-from .forms import StudentFileForm, StudentForm, ExamPaperForm
+from django.db.models import Count, Avg, Max, Sum
+from .forms import StudentFileForm, StudentForm, ExamPaperForm, ProfileUpdateForm
 
 # Admin check decorator
 def is_admin(user):
@@ -52,8 +53,114 @@ def profile(request):
         student = request.user.student
     except Student.DoesNotExist:
         student = None  # Handle the case where there's no Student profile
+        messages.error(request, "No student profile found. Please contact an administrator.")
+        return redirect('eduwize_app:home')
 
-    return render(request, 'eduwize_app/profile.html', {'student': student})
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, request.FILES, instance=student, user=request.user)
+        if form.is_valid():
+            # Update User model fields
+            user = request.user
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.email = form.cleaned_data['email']
+            user.save()
+
+            # Save the student profile
+            student_profile = form.save(commit=False)
+            if 'profile_picture' in request.FILES:
+                student_profile.profile_picture = request.FILES['profile_picture']
+            student_profile.save()
+
+            messages.success(request, "Your profile has been updated successfully!")
+            return redirect('eduwize_app:profile')
+    else:
+        form = ProfileUpdateForm(instance=student, user=request.user)
+
+    # Calculate additional context data
+    completed_courses = Enrollment.objects.filter(
+        student=student,
+        completed_at__isnull=False
+    ).count()
+
+    # Get average score from performance analysis
+    avg_score = PerformanceAnalysis.objects.filter(
+        student=student
+    ).aggregate(Avg('score'))['score__avg']
+
+    if avg_score is not None:
+        avg_score = round(avg_score)
+    else:
+        avg_score = 0
+
+    context = {
+        'student': student,
+        'form': form,
+        'completed_courses': completed_courses,
+        'avg_score': avg_score
+    }
+
+    return render(request, 'eduwize_app/profile.html', context)
+
+@login_required
+def settings_view(request):
+    try:
+        student = request.user.student
+    except Student.DoesNotExist:
+        student = None
+        messages.error(request, "No student profile found. Please contact an administrator.")
+        return redirect('eduwize_app:home')
+
+    if request.method == 'POST':
+        # Handle password update
+        if 'update_password' in request.POST:
+            current_password = request.POST.get('current_password')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+
+            if not request.user.check_password(current_password):
+                messages.error(request, "Current password is incorrect.")
+            elif new_password != confirm_password:
+                messages.error(request, "New passwords do not match.")
+            elif len(new_password) < 8:
+                messages.error(request, "Password must be at least 8 characters long.")
+            else:
+                request.user.set_password(new_password)
+                request.user.save()
+                update_session_auth_hash(request, request.user)  # Keep user logged in
+                messages.success(request, "Your password has been updated successfully!")
+
+        # Handle notification settings
+        elif 'update_notifications' in request.POST:
+            # In a real app, you would save these to a user preferences model
+            email_notifications = 'email_notifications' in request.POST
+            assignment_reminders = 'assignment_reminders' in request.POST
+            course_updates = 'course_updates' in request.POST
+
+            # For now, just show a success message
+            messages.success(request, "Notification settings updated successfully!")
+
+        # Handle privacy settings
+        elif 'update_privacy' in request.POST:
+            # In a real app, you would save these to a user preferences model
+            public_profile = 'public_profile' in request.POST
+            show_courses = 'show_courses' in request.POST
+            show_achievements = 'show_achievements' in request.POST
+
+            # For now, just show a success message
+            messages.success(request, "Privacy settings updated successfully!")
+
+        # Handle AI settings
+        elif 'update_ai_settings' in request.POST:
+            # In a real app, you would save these to a user preferences model
+            ai_recommendations = 'ai_recommendations' in request.POST
+            ai_feedback = 'ai_feedback' in request.POST
+            ai_model = request.POST.get('ai_model')
+
+            # For now, just show a success message
+            messages.success(request, "AI settings updated successfully!")
+
+    return render(request, 'eduwize_app/settings.html', {'student': student})
 
 
 
@@ -283,6 +390,47 @@ class PerformanceListView(ListView):
     template_name = 'eduwize_app/performance_list.html'
     context_object_name = 'performances'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Add real statistics for the performance dashboard
+        context['total_quizzes_taken'] = PerformanceAnalysis.objects.count()
+
+        # Calculate average score
+        avg_score = PerformanceAnalysis.objects.aggregate(Avg('score'))['score__avg']
+        context['average_score'] = round(avg_score) if avg_score else 0
+
+        # Get highest score
+        highest_score = PerformanceAnalysis.objects.aggregate(Max('score'))['score__max']
+        context['highest_score'] = highest_score if highest_score else 0
+
+        # Calculate total time spent (in hours)
+        # Note: This assumes time_taken is stored as a DurationField
+        total_time = PerformanceAnalysis.objects.filter(time_taken__isnull=False).aggregate(
+            Sum('time_taken')
+        )['time_taken__sum']
+
+        if total_time:
+            # Convert to hours and round to 1 decimal place
+            total_hours = total_time.total_seconds() / 3600
+            context['total_time_spent'] = f"{total_hours:.1f}h"
+        else:
+            context['total_time_spent'] = "0h"
+
+        # Get top performing students
+        top_students = Student.objects.annotate(
+            avg_score=Avg('performanceanalysis__score')
+        ).filter(avg_score__isnull=False).order_by('-avg_score')[:5]
+        context['top_students'] = top_students
+
+        # Get most attempted quizzes
+        most_attempted_quizzes = Quiz.objects.annotate(
+            attempt_count=Count('performanceanalysis')
+        ).order_by('-attempt_count')[:5]
+        context['most_attempted_quizzes'] = most_attempted_quizzes
+
+        return context
+
 class PerformanceDetailView(DetailView):
     model = PerformanceAnalysis
     template_name = 'eduwize_app/performance_detail.html'
@@ -294,6 +442,49 @@ class NotificationsListView(ListView):
     model = Notification
     template_name = 'eduwize_app/notifications_list.html'
     context_object_name = 'notifications'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # If user is authenticated, only show their notifications
+        if self.request.user.is_authenticated:
+            try:
+                queryset = queryset.filter(student=self.request.user.student)
+            except:
+                # If user doesn't have a student profile, show no notifications
+                queryset = Notification.objects.none()
+        else:
+            # If user is not authenticated, show no notifications
+            queryset = Notification.objects.none()
+
+        # Order by created_at (newest first)
+        queryset = queryset.order_by('-created_at')
+
+        return queryset
+
+    def post(self, request, *args, **kwargs):
+        # Handle mark all as read functionality
+        if 'mark_all_read' in request.POST:
+            if request.user.is_authenticated:
+                try:
+                    # Get all unread notifications for this user
+                    unread_notifications = Notification.objects.filter(
+                        student=request.user.student,
+                        is_read=False
+                    )
+
+                    # Mark them all as read
+                    unread_notifications.update(is_read=True)
+
+                    messages.success(request, "All notifications marked as read.")
+                except:
+                    messages.error(request, "Failed to mark notifications as read.")
+
+            # Redirect back to notifications page
+            return redirect('eduwize_app:notifications-list')
+
+        return super().get(request, *args, **kwargs)
 
 
 # Feedback Views
@@ -380,61 +571,80 @@ class AIChatbotView(View):
                 return JsonResponse({'success': False, 'error': 'Question is required'}, status=400)
             return redirect('eduwize_app:ai-chatbot')
 
-        # Generate an answer (in a real app, this would call an AI service)
+        # Generate an answer using our specialized AI model
         answer = self.generate_answer(question)
+
         # Save the chat message
-        # if request.user.is_authenticated:
-        #     try:
-        #         chat = AIChatbot.objects.create(
-        #             student=request.user.student,
-        #             question=question,
-        #             answer=answer
-        #         )
-        #     except:
-        #         # If user doesn't have a student profile, just create the chat without student
-        #         chat = AIChatbot.objects.create(
-        #             question=question,
-            #answer=answer
-        #         )
-        # else:
-        #     chat = AIChatbot.objects.create(
-        #         question=question,
-        #         answer=answer
-        #     )
+        chat = None
+        if request.user.is_authenticated:
+            try:
+                chat = AIChatbot.objects.create(
+                    student=request.user.student,
+                    question=question,
+                    answer=answer
+                )
+            except Exception as e:
+                print(f"Error saving chat with student: {e}")
+                # If user doesn't have a student profile, just create the chat without student
+                chat = AIChatbot.objects.create(
+                    question=question,
+                    answer=answer
+                )
+        else:
+            chat = AIChatbot.objects.create(
+                question=question,
+                answer=answer
+            )
 
         # If this is an AJAX request, return JSON response
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
+            response_data = {
                 'question': question,
                 'answer': answer,
                 'timestamp': datetime.datetime.now().strftime('%H:%M')
-            })
+            }
+
+            # Add chat ID if available
+            if chat:
+                response_data['chat_id'] = chat.id
+
+            return JsonResponse(response_data)
 
         # Otherwise redirect back to the chatbot page
         return redirect('eduwize_app:ai-chatbot')
 
     def generate_answer(self, question):
         """
-        Generate an answer based on the question.
-        In a real app, this would call an AI service or API.
+        Generate an answer based on the question using our specialized AI model.
         """
-        return "This is a test response."
-        model = genai.GenerativeModel('gemini-pro')
-        # Access knowledge base
-        context = ""
+        # Import our AI model
+        from .ai_models import BaseAIAssistant
+
+        # Create an instance of our AI assistant
+        ai_assistant = BaseAIAssistant()
+
+        # Access knowledge base to provide context
+        context = {}
         for subject, levels in self.knowledge_base.items():
             if subject.lower() in question.lower():
-                context += f"Information about {subject}:\n"
-                for level, description in levels.items():
-                    if level.lower() in question.lower():
-                        context += f"- {level}: {description}\n"
+                context["subject"] = subject
+                context["level"] = next((level for level in levels.keys() if level.lower() in question.lower()), None)
+                break
 
-        prompt = f"You are a helpful AI assistant for NCV students studying at Eduwize. Answer the following question about the NCV curriculum: {question}. Use the following information to provide a more detailed and accurate answer: {context}. Provide detailed and accurate information, and explain complex concepts in a clear and concise manner. If the question is about an assignment or tutorial, provide a step-by-step solution and relevant examples."
+        # Generate response using our specialized model
         try:
-            response = model.generate_content(prompt)
-            return response.text
+            response = ai_assistant.generate_response(
+                prompt=question,
+                context={
+                    "task_type": "concept_teaching",
+                    "subject": context.get("subject", "general"),
+                    "depth": "intermediate"
+                }
+            )
+            return response
         except Exception as e:
-            return f"An error occurred: {e}"
+            print(f"Error generating response: {e}")
+            return f"I'm having trouble processing your request at the moment. Please try again later."
 
 
 # AI Recommendation Views
@@ -461,8 +671,8 @@ class ActivityLogView(ListView):
 # Home Page View
 class HomePageView(ListView):
     model = Course
-    template_name = 'eduwize_app/home.html'
-    context_object_name = 'courses'
+    template_name = 'eduwize_app/dark_home.html'  # Use the new dark theme template
+    context_object_name = 'featured_courses'  # Changed to match the template
     paginate_by = 10
     ordering = ['-created_at']
     # queryset = Course.objects.all() # Fetch all courses - handled by get_queryset
@@ -478,6 +688,17 @@ class HomePageView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Add real statistics for the dashboard
+        context['course_count'] = Course.objects.count()
+        context['student_count'] = Student.objects.filter(status='active').count()
+        context['ai_interactions'] = AIChatbot.objects.count()
+
+        # Get top courses by enrollment
+        top_courses = Course.objects.annotate(
+            enrollment_count=Count('enrollment')
+        ).order_by('-enrollment_count')[:5]
+        context['top_courses'] = top_courses
 
         # Add recent activities if user is authenticated
         if self.request.user.is_authenticated:
@@ -527,12 +748,6 @@ class StudyPlannerView(TemplateView):
             pass
 
         return context
-
-class NotificationsListView(ListView):
-    model = Notification
-    template_name = 'eduwize_app/notifications_list.html'
-    context_object_name = 'notifications'
-
 
 def student_files_upload(request):
     if request.method == 'POST':

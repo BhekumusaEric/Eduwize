@@ -2,6 +2,11 @@ from django.urls import path
 from django.views.generic import TemplateView , ListView , DetailView , CreateView , UpdateView , DeleteView
 from django.contrib.auth import views as auth_views
 from . import views
+from .ai_views import CyberSecurityAIView, AssignmentHelpAIView, FileGenerationAIView
+from .ai_feedback_views import AIFeedbackView, QuickFeedbackView, AITrainingDataSubmissionView, AIModelPerformanceView
+from .multimodal_views import MultiModalAIView
+from .debug_views import test_cyber_security_ai, test_assignment_help_ai, ai_test_page
+from .api_views import mark_notification_as_read, mark_notification_as_unread, mark_all_notifications_as_read
 
 app_name = 'eduwize_app'
 urlpatterns = [
@@ -70,10 +75,35 @@ urlpatterns = [
     path('tags/', views.TagsListView.as_view(), name='tags'),
     path('activity-log/', views.ActivityLogView.as_view(), name='activity-log'),
     path('profile/', views.profile, name='profile'),
+    path('settings/', views.settings_view, name='settings'),
+
+    # Specialized AI Assistants
+    path('cyber-security-ai/', CyberSecurityAIView.as_view(), name='cyber-security-ai'),
+    path('assignment-help-ai/', AssignmentHelpAIView.as_view(), name='assignment-help-ai'),
+    path('file-generation-ai/', FileGenerationAIView.as_view(), name='file-generation-ai'),
+
+    # AI Feedback and Training
+    path('ai-feedback/<int:chat_id>/', AIFeedbackView.as_view(), name='ai-feedback'),
+    path('ai-quick-feedback/<int:chat_id>/', QuickFeedbackView.as_view(), name='ai-quick-feedback'),
+    path('ai-training-data-submission/', AITrainingDataSubmissionView.as_view(), name='ai-training-data-submission'),
+    path('ai-model-performance/', AIModelPerformanceView.as_view(), name='ai-model-performance'),
+
+    # Multi-modal AI
+    path('visual-teacher-ai/', MultiModalAIView.as_view(), name='visual-teacher-ai'),
+
+    # Debug endpoints for AI testing
+    path('ai-test/', ai_test_page, name='ai-test'),
+    path('api/test-cyber-security-ai/', test_cyber_security_ai, name='test-cyber-security-ai'),
+    path('api/test-assignment-help-ai/', test_assignment_help_ai, name='test-assignment-help-ai'),
 
     # Health check endpoint
     path('health/', views.health_check, name='health-check'),
 
     # PWA offline page
     path('offline/', views.offline_view, name='offline'),
+
+    # API endpoints
+    path('api/notifications/<int:notification_id>/mark-read/', mark_notification_as_read, name='mark-notification-read'),
+    path('api/notifications/<int:notification_id>/mark-unread/', mark_notification_as_unread, name='mark-notification-unread'),
+    path('api/notifications/mark-all-read/', mark_all_notifications_as_read, name='mark-all-notifications-read'),
 ]
